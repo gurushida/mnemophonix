@@ -20,9 +20,15 @@ struct frames {
     // The number of frames
     unsigned int n_frames;
 
-    // A 2-dimensional n_frames x NUMBER_OF_BINS array that gives
-    // for each frame of SAMPLES_PER_FRAME samples a corresponding
-    // spectrogram consisting of NUMBER_OF_BINS float values
+    // A array of size (n_frames x NUMBER_OF_BINS) that gives for
+    // each frame of SAMPLES_PER_FRAME samples a corresponding
+    // spectrogram consisting of NUMBER_OF_BINS float values.
+    // The array layout is as follows:
+    //
+    //  +---------------+---------------+----
+    //  | spectrogram 0 | spectrogram 1 | ...
+    //  +---------------+---------------+----
+    //  0               32              64
     float* spectrograms;
 };
 

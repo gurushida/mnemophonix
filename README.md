@@ -13,3 +13,4 @@ This work used the following sources:
 * https://docs.microsoft.com/en-us/windows/win32/api/mmreg/ns-mmreg-waveformatex and https://github.com/tpn/winddk-8.1/blob/master/Include/shared/mmreg.h for details about possible wave formats
 * https://www.recordingblogs.com/wiki/list-chunk-of-a-wave-file: description of the metadata that can be found in a wave file
 * https://introcs.cs.princeton.edu/java/97data/InplaceFFT.java.html: in place fast Fourier transform
+* https://www.eecis.udel.edu/~amer/CISC651/wavelets_for_computer_graphics_Stollnitz.pdf: explanations about Haar wavelets

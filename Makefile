@@ -1,6 +1,6 @@
 all: libmnemophonix.so mnemophonix
 
-SOURCES=wav.c fingerprinting.c fft.c spectrogram.c frames.c
+SOURCES=wav.c fingerprinting.c fft.c spectrogram.c frames.c haar.c
 
 mnemophonix: main.c libmnemophonix.so
 	$(CC) -lmnemophonix -L. main.c -Wl,-rpath,. -o mnemophonix -Wall -Wextra -pedantic -std=c99
