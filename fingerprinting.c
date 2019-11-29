@@ -3,6 +3,7 @@
 #include "fingerprinting.h"
 #include "frames.h"
 #include "haar.h"
+#include "rawfingerprints.h"
 #include "wav.h"
 
 
@@ -52,7 +53,14 @@ int generate_fingerprint(const char* wav) {
     printf("Got %d frames\n", frames->n_frames);
     apply_Haar_transform(frames);
 
-    free_wav_reader(reader);
+    struct rawfingerprints* rawfingerprints = build_raw_fingerprints(frames);
     free_frames(frames);
+    if (rawfingerprints == NULL) {
+        free_wav_reader(reader);
+        return MEMORY_ERROR;
+    }
+
+    free_rawfingerprints(rawfingerprints);
+    free_wav_reader(reader);
     return SUCCESS;
 }
