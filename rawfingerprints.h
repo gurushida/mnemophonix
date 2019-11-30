@@ -41,10 +41,13 @@ struct rawfingerprints {
  * The result of the Haar transform on a spectral image is a matrix of the
  * same dimension as the image so that the non homogeneous parts of the
  * input produce bigger coefficients that the homogeneous parts. We can take
- * advantage of this by retaining the N biggest coefficients in absolute value
- * and by only encoding whether they are positive, negative or null. By representing
- * negative values as 01, positive values as 10 and other values as 00, this gives
- * a very sparse bit array suitable for further compression.
+ * advantage of this by only retaining the N biggest coefficients in absolute value.
+ * Moreover researchers have shown that the actual coefficients are not needed to
+ * get an effective search, and that only using their signs is enough (Jacobs,  C.,
+ * Finkelstein,  A.,  Salesin,  D.  (1995)  Fast  Multiresolution Image Querying.
+ * in Proc of SIGGRAPH 95.). By representing negative values as 01, positive values
+ * as 10 and other values as 00, this gives a very sparse bit array suitable for
+ * further compression.
  *
  * Given frames that have already been transformed into Haar wavelets,
  * this function calculates raw fingerprints.
