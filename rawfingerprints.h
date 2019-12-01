@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "frames.h"
 #include "haar.h"
+#include "permutations.h"
 #include "spectrogram.h"
 
 

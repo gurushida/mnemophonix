@@ -3,6 +3,7 @@
 #include "fingerprinting.h"
 #include "frames.h"
 #include "haar.h"
+#include "minhash.h"
 #include "rawfingerprints.h"
 #include "wav.h"
 
@@ -60,7 +61,15 @@ int generate_fingerprint(const char* wav) {
         return MEMORY_ERROR;
     }
 
+    struct signatures* signatures = build_signatures(rawfingerprints);
     free_rawfingerprints(rawfingerprints);
+    if (signatures == NULL) {
+        free_wav_reader(reader);
+        return MEMORY_ERROR;
+    }
+    printf("Generated %d signatures\n", signatures->n_signatures);
+
+    free_signatures(signatures);
     free_wav_reader(reader);
     return SUCCESS;
 }
