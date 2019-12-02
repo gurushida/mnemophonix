@@ -9,7 +9,8 @@
 
 
 
-int generate_fingerprint(const char* wav, struct signatures* *fingerprint) {
+int generate_fingerprint(const char* wav, struct signatures* *fingerprint,
+                            char* *artist, char* *track_title, char* *album_title) {
     // Let's make sure we have a wave file we can read
     struct wav_reader* reader;
     int res = new_wav_reader(wav, &reader);
@@ -26,6 +27,14 @@ int generate_fingerprint(const char* wav, struct signatures* *fingerprint) {
     if (reader->album_title != NULL) {
         fprintf(stderr, "Album title: %s\n", reader->album_title);
     }
+
+    // Let's steal the metadata from the wav reader
+    *artist = reader->artist;
+    *track_title = reader->track_title;
+    *album_title = reader->album_title;
+    reader->artist = NULL;
+    reader->track_title = NULL;
+    reader->album_title = NULL;
 
     // Let's downsample the file into 5512Hz mono float samples between -1.0 and 1.0
     float* samples;
