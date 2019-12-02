@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include "resample.h"
 #include "wav.h"
 
 
@@ -306,26 +307,14 @@ void free_wav_reader(struct wav_reader* reader) {
 }
 
 
-/**
- * Returns the number of samples that can be read from the file assuming
- * that the file is downsampled to 5512Hz and that it is converted to mono.
- */
-static unsigned int get_sample_count(struct wav_reader* reader) {
-    // Number of 44100Hz samples
-    int n_original_samples = (reader->data_chunk_size / reader->wBlockAlign);
-    // Let's divide by 8 to get the number of samples at 5512Hz
-    return n_original_samples / 8;
-}
-
-
 int read_samples(struct wav_reader* reader, float* *samples) {
-    unsigned int n_samples = get_sample_count(reader);
-    (*samples) = (float*)malloc(n_samples * sizeof(float));
-    if ((*samples) == NULL) {
+    unsigned int n_samples = reader->data_chunk_size / reader->wBlockAlign;
+    float* samples_44100Hz = (float*)malloc(n_samples * sizeof(float));
+    if (samples_44100Hz == NULL) {
         return MEMORY_ERROR;
     }
 
-    int n_src_bytes_for_one_dest_sample = 8 * reader->wBlockAlign;
+    int n_src_bytes_for_one_dest_sample = reader->wBlockAlign;
     u_int8_t* src_samples = (u_int8_t*)malloc(n_src_bytes_for_one_dest_sample);
     if (src_samples == NULL) {
         return DECODING_ERROR;
@@ -333,7 +322,7 @@ int read_samples(struct wav_reader* reader, float* *samples) {
     for (unsigned int i = 0 ; i < n_samples ; i++) {
         if (!read_bytes(reader->f, n_src_bytes_for_one_dest_sample, src_samples)) {
             free(src_samples);
-            free(*samples);
+            free(samples_44100Hz);
             return DECODING_ERROR;
         }
         int sum = 0;
@@ -346,9 +335,18 @@ int read_samples(struct wav_reader* reader, float* *samples) {
         // dividing by the number of channels and then to normalize
         // the value between -32767.0 and 32767.0 into a value between -1.0 and 1.0
         float res = ((sum / (float)reader->wChannels)) / 32767.0;
-        (*samples)[i] = res;
+        samples_44100Hz[i] = res;
     }
 
     free(src_samples);
-    return n_samples;
+
+    // Now we have mono 44100Hz samples between 0 and 1. It is
+    // time to resample to 5512Hz
+    (*samples) = resample(samples_44100Hz, n_samples);
+    free(samples_44100Hz);
+    if ((*samples) == NULL) {
+        return MEMORY_ERROR;
+    }
+
+    return n_samples / 8;
 }

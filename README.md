@@ -16,3 +16,4 @@ This work used the following sources:
 * https://www.eecis.udel.edu/~amer/CISC651/wavelets_for_computer_graphics_Stollnitz.pdf: explanations about Haar wavelets
 * https://medium.com/engineering-brainly/locality-sensitive-hashing-explained-304eb39291e4: explains how MinHash works
 * https://static.googleusercontent.com/media/research.google.com/en//pubs/archive/34409.pdf: explains how to generate good permutations for the MinHash algorithm
+* https://tomroelandts.com/articles/how-to-create-a-simple-low-pass-filter: explanations about low pass filters
