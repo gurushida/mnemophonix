@@ -9,7 +9,8 @@ int main(int argc, char* argv[]) {
     }
     const char* wav = argv[1];
 
-    int res = generate_fingerprint(wav);
+    struct signatures* fingerprint;
+    int res = generate_fingerprint(wav, &fingerprint);
     if (res != SUCCESS) {
         switch (res) {
             case CANNOT_READ_FILE: fprintf(stderr, "Cannot read file '%s'\n", wav); return 1;
