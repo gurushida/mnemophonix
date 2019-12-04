@@ -20,7 +20,6 @@ void normalize(float* samples, unsigned int size) {
     }
 
     for (unsigned int i = 0 ; i < size ; i++) {
-        float o = samples[i];
         float value = samples[i] / rms;
         if (value < -1.0) {
             samples[i] = -1.0;
