@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include "fft.h"
 #include "frames.h"
+#include "hannwindow.h"
 #include "spectrogram.h"
 
 /**
@@ -28,9 +29,11 @@ struct frames* build_frames(float* samples, unsigned int n_samples) {
 
     // We will now apply a Fast Fourier Transform (FFT) to each
     // frame, which will produce an array of complex numbers
+    float* temp = (float*)malloc(SAMPLES_PER_FRAME * sizeof(float));
     float* real = (float*)malloc(SAMPLES_PER_FRAME * sizeof(float));
     float* imaginary = (float*)malloc(SAMPLES_PER_FRAME * sizeof(float));
-    if (real == NULL || imaginary == NULL) {
+    if (temp == NULL || real == NULL || imaginary == NULL) {
+        free(temp);
         free(real);
         free(imaginary);
         free(frames->spectrograms);
@@ -38,11 +41,19 @@ struct frames* build_frames(float* samples, unsigned int n_samples) {
         return NULL;
     }
 
+    float* hann_window = get_Hann_window();
+
     for (unsigned int i = 0 ; i < frames->n_frames ; i++) {
-        fft(&(samples[i * INTERVAL_BETWEEN_FRAMES]), real, imaginary);
+        for (unsigned int j = 0 ; j < SAMPLES_PER_FRAME ; j++) {
+            // Before calculating the Fast Fourier Transform, we
+            // apply to each sample a coefficient to avoid spectral leakage
+            temp[j] = samples[i * INTERVAL_BETWEEN_FRAMES + j] * hann_window[j];
+        }
+        fft(temp, real, imaginary);
         create_spectrogram(real, imaginary, &(frames->spectrograms[i * NUMBER_OF_BINS]));
     }
 
+    free(temp);
     free(real);
     free(imaginary);
 

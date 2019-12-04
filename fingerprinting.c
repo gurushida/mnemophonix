@@ -46,8 +46,6 @@ int generate_fingerprint(const char* wav, struct signatures* *fingerprint,
         return n < 0 ? n : FILE_TOO_SMALL;
     }
 
-    // TODO: normalize samples
-
     // Once we get the 5512Hz mono audio samples, the next step
     // is to build many small signatures corresponding to small
     // sample zones that overlap a lot.
