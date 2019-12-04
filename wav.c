@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include "audionormalizer.h"
 #include "resample.h"
 #include "wav.h"
 
@@ -347,6 +348,9 @@ int read_samples(struct wav_reader* reader, float* *samples) {
     if ((*samples) == NULL) {
         return MEMORY_ERROR;
     }
+
+    // Finally let's normalize the samples
+    normalize(*samples, n_samples / 8);
 
     return n_samples / 8;
 }
