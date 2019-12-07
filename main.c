@@ -70,6 +70,7 @@ int main(int argc, char* argv[]) {
     } else {
         const char* index = argv[3];
         struct index* database_index;
+        printf("Loading database %s...\n", index);
         int res = read_index(index, &database_index);
         if (res != SUCCESS) {
             switch (res) {
@@ -78,6 +79,7 @@ int main(int argc, char* argv[]) {
             }
         }
 
+        printf("Searching...\n");
         int best_match = search(fingerprint, database_index);
         if (best_match == -1) {
             printf("No match found\n");
