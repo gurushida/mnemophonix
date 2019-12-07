@@ -52,6 +52,10 @@ static void transform_image(struct spectral_image* image) {
             row[i] = image->image[i * NUMBER_OF_BINS + y];
         }
         transform_array(row, SPECTRAL_IMAGE_WIDTH);
+        // Now let's copy the transformed values back into the original array
+        for (unsigned int i = 0 ; i < SPECTRAL_IMAGE_WIDTH ; i++) {
+            image->image[i * NUMBER_OF_BINS + y] = row[i];
+        }
     }
 
     // Now let's transform the columns. Since the columns are already
