@@ -2,10 +2,10 @@
 #define _RAWFINGERPRINTS_H
 
 #include <stdint.h>
-#include "frames.h"
 #include "haar.h"
 #include "logbins.h"
 #include "permutations.h"
+#include "spectralimages.h"
 
 
 // Number of wavelets to retain to create a raw fingerprint.

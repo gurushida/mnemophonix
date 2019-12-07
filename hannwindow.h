@@ -1,7 +1,7 @@
 #ifndef _HANNWINDOW_H
 #define _HANNWINDOW_H
 
-#include "frames.h"
+#include "spectralimages.h"
 
 
 /**

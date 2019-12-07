@@ -1,5 +1,5 @@
-#ifndef _FRAMES_H
-#define _FRAMES_H
+#ifndef _SPECTRALIMAGES_H
+#define _SPECTRALIMAGES_H
 
 #include "logbins.h"
 

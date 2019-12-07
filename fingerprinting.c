@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "fingerprinting.h"
-#include "frames.h"
 #include "haar.h"
 #include "minhash.h"
 #include "rawfingerprints.h"
+#include "spectralimages.h"
 #include "wav.h"
 
 

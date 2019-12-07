@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "fft.h"
-#include "frames.h"
 #include "hannwindow.h"
+#include "spectralimages.h"
 
 /**
  * Returns the number of frames we can have when

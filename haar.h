@@ -1,7 +1,7 @@
 #ifndef _HAARWAVELETS_H
 #define _HAARWAVELETS_H
 
-#include "frames.h"
+#include "spectralimages.h"
 
 
 /**
