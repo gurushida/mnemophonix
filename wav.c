@@ -272,7 +272,7 @@ int new_wav_reader(const char* wav, struct wav_reader* *reader) {
 
     if (!read_file_header(*reader)) {
         free_wav_reader(*reader);
-        return DECODING_ERROR;
+        return NOT_A_WAVE_FILE;
     }
 
     int res;

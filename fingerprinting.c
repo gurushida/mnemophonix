@@ -29,9 +29,9 @@ int generate_fingerprint(const char* wav, struct signatures* *fingerprint,
     }
 
     // Let's steal the metadata from the wav reader
-    *artist = reader->artist;
-    *track_title = reader->track_title;
-    *album_title = reader->album_title;
+    if (artist != NULL) *artist = reader->artist;
+    if (track_title != NULL) *track_title = reader->track_title;
+    if (album_title != NULL) *album_title = reader->album_title;
     reader->artist = NULL;
     reader->track_title = NULL;
     reader->album_title = NULL;

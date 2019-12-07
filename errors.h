@@ -22,4 +22,7 @@
 // a fingerprint
 #define FILE_TOO_SMALL -5
 
+// Returned when an input file does not look like a wave file at all
+#define NOT_A_WAVE_FILE -6
+
 #endif

@@ -49,6 +49,7 @@ struct wav_reader {
  *         UNSUPPORTED_WAVE_FORMAT if the file looks like a wave file of
  *                                 a format other than uncompressed integer
  *                                 16-bit 44100Hz PCM
+ *         NOT_A_WAVE_FILE if the file does not even look like a wave file
  */
 int new_wav_reader(const char* wav, struct wav_reader* *reader);
 
