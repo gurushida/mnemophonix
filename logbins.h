@@ -1,5 +1,5 @@
-#ifndef _SPECTROGRAM_H
-#define _SPECTROGRAM_H
+#ifndef _LOGBINS_H
+#define _LOGBINS_H
 
 // How many bins do we produce for one frame
 #define NUMBER_OF_BINS 32

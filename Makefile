@@ -1,6 +1,6 @@
 all: libmnemophonix.so mnemophonix
 
-SOURCES=wav.c fingerprinting.c fft.c spectrogram.c frames.c haar.c rawfingerprints.c minhash.c permutations.c fingerprintio.c \
+SOURCES=wav.c fingerprinting.c fft.c logbins.c frames.c haar.c rawfingerprints.c minhash.c permutations.c fingerprintio.c \
         resample.c audionormalizer.c hannwindow.c
 
 mnemophonix: main.c libmnemophonix.so

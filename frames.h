@@ -1,7 +1,8 @@
 #ifndef _FRAMES_H
 #define _FRAMES_H
 
-#include "spectrogram.h"
+#include "logbins.h"
+
 
 // How many float samples we use in one frame. Choosing
 // a power of 2 is not an accident as it will allow us to use the

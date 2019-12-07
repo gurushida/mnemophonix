@@ -4,8 +4,8 @@
 #include <stdint.h>
 #include "frames.h"
 #include "haar.h"
+#include "logbins.h"
 #include "permutations.h"
-#include "spectrogram.h"
 
 
 // Number of wavelets to retain to create a raw fingerprint.
