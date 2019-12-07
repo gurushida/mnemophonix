@@ -50,13 +50,13 @@ struct rawfingerprints {
  * as 10 and other values as 00, this gives a very sparse bit array suitable for
  * further compression.
  *
- * Given frames that have already been transformed into Haar wavelets,
+ * Given spectral images that have already been transformed into Haar wavelets,
  * this function calculates raw fingerprints.
  *
- * @param haar_transformed_frames The frames after the Haar transform
+ * @param haar_transformed_images The spectral images after the Haar transform
  * @return The raw fingerprints or NULL in case of memory allocation error
  */
-struct rawfingerprints* build_raw_fingerprints(struct frames* haar_transformed_frames);
+struct rawfingerprints* build_raw_fingerprints(struct spectral_images* haar_transformed_images);
 
 
 /**

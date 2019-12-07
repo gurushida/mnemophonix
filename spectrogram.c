@@ -55,7 +55,7 @@ static void generate_bin_indexes() {
 }
 
 
-void create_spectrogram(float* real, float* imaginary, float* spectrogram) {
+void calculate_bins(float* real, float* imaginary, float* bins) {
     if (bin_indexes[0] == 0xFFFF) {
         // If needed, let's initialize the bin indexes
         generate_bin_indexes();
@@ -67,10 +67,10 @@ void create_spectrogram(float* real, float* imaginary, float* spectrogram) {
 
         float sum = 0;
         for (unsigned int j = min_index ; j < max_index ; j++) {
-            float re = real[j];
-            float im = imaginary[j];
+            float re = real[j] / 1024.0;
+            float im = imaginary[j] / 1024.0;
             sum += (re * re) + (im * im);
         }
-        spectrogram[i] = sum / (max_index - min_index);
+        bins[i] = sum / (max_index - min_index);
     }
 }

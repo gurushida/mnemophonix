@@ -49,18 +49,18 @@ int generate_fingerprint(const char* wav, struct signatures* *fingerprint,
     // Once we get the 5512Hz mono audio samples, the next step
     // is to build many small signatures corresponding to small
     // sample zones that overlap a lot.
-    struct frames* frames = build_frames(samples, n);
+    struct spectral_images* spectral_images = build_spectral_images(samples, n);
     free(samples);
 
-    if (frames == NULL) {
+    if (spectral_images == NULL) {
         return MEMORY_ERROR;
     }
 
-    fprintf(stderr, "Got %d frames\n", frames->n_frames);
-    apply_Haar_transform(frames);
+    fprintf(stderr, "Got %d spectral images\n", spectral_images->n_images);
+    apply_Haar_transform(spectral_images);
 
-    struct rawfingerprints* rawfingerprints = build_raw_fingerprints(frames);
-    free_frames(frames);
+    struct rawfingerprints* rawfingerprints = build_raw_fingerprints(spectral_images);
+    free_spectral_images(spectral_images);
     if (rawfingerprints == NULL) {
         return MEMORY_ERROR;
     }

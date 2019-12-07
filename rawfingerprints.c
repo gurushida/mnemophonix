@@ -46,8 +46,8 @@ static void convert_top_wavelets(struct coeff_and_index* sorted_data, struct raw
 }
 
 
-struct rawfingerprints* build_raw_fingerprints(struct frames* haar_transformed_frames) {
-    unsigned int n_images = haar_transformed_frames->n_frames / SPECTRAL_IMAGE_WIDTH;
+struct rawfingerprints* build_raw_fingerprints(struct spectral_images* haar_transformed_images) {
+    unsigned int n_images = haar_transformed_images->n_images;
 
     struct rawfingerprints* rfp = (struct rawfingerprints*)malloc(sizeof(struct rawfingerprints));
     if (rfp == NULL) {
@@ -67,9 +67,8 @@ struct rawfingerprints* build_raw_fingerprints(struct frames* haar_transformed_f
     for (unsigned int i = 0 ; i < n_images ; i++) {
         // For each spectral image, let's copy the coefficients
         // and their positions into the temp array
-        unsigned int start = i * N;
         for (unsigned int j = 0 ; j < N ; j++) {
-            temp[j].coeff = haar_transformed_frames->spectrograms[start + j];
+            temp[j].coeff = haar_transformed_images->images[i].image[j];
             temp[j].index = j;
         }
 

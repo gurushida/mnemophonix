@@ -1,6 +1,7 @@
 #ifndef _SPECTROGRAM_H
 #define _SPECTROGRAM_H
 
+// How many bins do we produce for one frame
 #define NUMBER_OF_BINS 32
 
 /**
@@ -55,10 +56,10 @@
  *
  * @param real The 2048 real values produced by the FFT
  * @param imaginary The 2048 imaginary values produced by the FFT
- * @param spectrogram Where to store the results. The array is supposed
+ * @param bins Where to store the results. The array is supposed
  *                    large enough to hold 32 float values
  */
-void create_spectrogram(float* real, float* imaginary, float* spectrogram);
+void calculate_bins(float* real, float* imaginary, float* spectrogram);
 
 
 #endif
