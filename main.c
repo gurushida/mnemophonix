@@ -63,13 +63,13 @@ int main(int argc, char* argv[]) {
             ret_value  = 1;
         } else {
             printf("Found match: '%s'\n", database_index->entries[best_match]->filename);
-            if (database_index->entries[best_match]->artist) {
+            if (database_index->entries[best_match]->artist[0]) {
                 printf("Artist: %s\n", database_index->entries[best_match]->artist);
             }
-            if (database_index->entries[best_match]->track_title) {
+            if (database_index->entries[best_match]->track_title[0]) {
                 printf("Track title: %s\n", database_index->entries[best_match]->track_title);
             }
-            if (database_index->entries[best_match]->album_title) {
+            if (database_index->entries[best_match]->album_title[0]) {
                 printf("Album title: %s\n", database_index->entries[best_match]->album_title);
             }
         }
