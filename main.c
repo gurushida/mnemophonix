@@ -6,6 +6,7 @@
 #include "ffmpeg.h"
 #include "fingerprinting.h"
 #include "fingerprintio.h"
+#include "lsh.h"
 #include "search.h"
 
 static long time_in_milliseconds() {
@@ -79,6 +80,7 @@ int main(int argc, char* argv[]) {
         const char* index = argv[3];
         struct index* database_index;
         printf("Loading database %s...\n", index);
+        long before_loading_db = time_in_milliseconds();
         int res = read_index(index, &database_index);
         if (res != SUCCESS) {
             switch (res) {
@@ -86,15 +88,20 @@ int main(int argc, char* argv[]) {
                 case MEMORY_ERROR: fprintf(stderr, "Memory allocation error\n"); return 1;
             }
         }
+        long after_loading_db = time_in_milliseconds();
+        printf("(raw database loading took %ld ms)\n", after_loading_db - before_loading_db);
 
-        long before = time_in_milliseconds();
+        struct lsh* lsh = create_hash_tables(database_index);
+        long after_lsh = time_in_milliseconds();
+        printf("(lsh index building took %ld ms)\n", after_lsh - after_loading_db);
+
         printf("Searching...\n");
 
-        int best_match = search(fingerprint, database_index);
-        long after = time_in_milliseconds();
-        printf("(Search took %ld ms)\n", after - before);
+        int best_match = search(fingerprint, database_index, lsh);
+        long after_search = time_in_milliseconds();
+        printf("(Search took %ld ms)\n", after_search - after_lsh);
 
-        if (best_match == -1) {
+        if (best_match == NO_MATCH_FOUND) {
             printf("\nNo match found\n\n");
             ret_value  = 1;
         } else {
@@ -110,9 +117,10 @@ int main(int argc, char* argv[]) {
             }
             printf("\n");
         }
-        free_index(database_index);
+
+        // Since we are done, the process will be terminated so there is no point
+        // in cleaning up memory as all the pages will be recycled by the OS.
     }
-    free_signatures(fingerprint);
 
     return ret_value;
 }

@@ -1,5 +1,6 @@
-#include <math.h>
+#include <stdlib.h>
 #include <string.h>
+#include "lsh.h"
 #include "search.h"
 
 
@@ -15,20 +16,9 @@
 #define MIN_SCORE 30
 
 
-/**
- * In order to get forgiving hashing, each hash of 100 bytes is viewed
- * as 25 buckets of 4-byte hashes. Given, two hashes, this function
- * returns the number of buckets where the subhashes are identical.
- */
-static unsigned int get_matching_buckets(u_int8_t* hash1, uint8_t* hash2) {
-    unsigned int n = 0;
-    for (unsigned int i = 0 ; i < SIGNATURE_LENGTH / 4 ; i++) {
-        if (0 == memcmp(&(hash1[i * 4]), &(hash2[i * 4]), 4)) {
-            n++;
-        }
-    }
-    return n;
-}
+// Minimum number of full signature matches that an audio sample must have
+// with a given database entry to be retained
+#define  MIN_SIGNATURE_MATCHES 2
 
 
 /**
@@ -46,39 +36,90 @@ static unsigned int compare_hashes(u_int8_t* hash1, uint8_t* hash2) {
 }
 
 
-int search(struct signatures* sample, struct index* database) {
-    int best_match = -1;
-    int best_score = 0;
+static int compare(struct signature_list* a, struct signature_list* b) {
+    int diff = a->entry_index - b->entry_index;
+    if (diff != 0) {
+        return diff;
+    }
+    return a->signature_index - b->signature_index;
+}
 
-    // For each entry in the database
-    for (unsigned int i = 0 ; i < database->n_entries ; i++) {
-        struct index_entry* entry = database->entries[i];
+
+int search(struct signatures* sample, struct index* database, struct lsh* lsh) {
+    float* scores = (float*)calloc(database->n_entries, sizeof(float));
+    if (scores == NULL) {
+        return MEMORY_ERROR;
+    }
+    int* n_matches = (int*)calloc(database->n_entries, sizeof(int));
+    if (n_matches == NULL) {
+        free(scores);
+        return MEMORY_ERROR;
+    }
 
 
-        // We compare each signature of the entry wich each signature
-        // of the sample
-        unsigned int score_for_entry = 0;
-        unsigned int buckets = 0;
-        unsigned int matches = 0;
-        for (unsigned int j = 0 ; j < entry->signatures->n_signatures ; j++) {
-            for (unsigned int k = 0 ; k < sample->n_signatures ; k++) {
-                int n_matching_buckets = get_matching_buckets(entry->signatures->signatures[j].minhash, sample->signatures[k].minhash);
-                if (n_matching_buckets >= MIN_BUCKET_MATCH_FOR_DEEP_CHECK) {
-                    unsigned int score = compare_hashes(entry->signatures->signatures[j].minhash, sample->signatures[k].minhash);
+    for (unsigned int i = 0 ; i < sample->n_signatures ; i++) {
+        struct signature_list* list;
+        int res = get_matches(lsh, sample->signatures[i].minhash, &list);
+        if (res == MEMORY_ERROR) {
+            free(scores);
+            free(n_matches);
+            return MEMORY_ERROR;
+        }
+
+        // Now that we have partial matches, we will put those matches in a sorted array
+        // to be able to count how many bucket matches we have per signature
+        struct signature_list* array = (struct signature_list*)malloc(res * sizeof(struct signature_list));
+        if (array == NULL) {
+            free_signature_list(list);
+            free(scores);
+            free(n_matches);
+            return MEMORY_ERROR;
+        }
+
+        for (int j = 0 ; j < res ; j++, list = list->next) {
+            array[j].entry_index = list->entry_index;
+            array[j].signature_index = list->signature_index;
+        }
+        free_signature_list(list);
+
+        qsort(array, res, sizeof(struct signature_list), (int (*)(const void *, const void *)) compare);
+
+        unsigned int n_identical_matches = 1;
+        for (int j = 1 ; j < res ; j++) {
+            if (array[j].entry_index == array[j - 1].entry_index
+                && array[j].signature_index == array[j - 1].signature_index) {
+                    n_identical_matches++;
+            } else {
+                if (n_identical_matches >= MIN_BUCKET_MATCH_FOR_DEEP_CHECK) {
+                    int entry_index = array[j - 1].entry_index;
+                    int signature_index = array[j - 1].signature_index;
+                    unsigned int score = compare_hashes(database->entries[entry_index]->signatures->signatures[signature_index].minhash,
+                                                        sample->signatures[i].minhash);
                     if (score >= MIN_SCORE) {
-                        score_for_entry += score;
-                        buckets += n_matching_buckets;
-                        matches++;
+                        scores[entry_index] += score;
+                        n_matches[entry_index]++;
                     }
                 }
+                n_identical_matches = 1;
             }
         }
 
-        float total_score = score_for_entry / (float)matches;
-        if (total_score > best_score) {
-            best_score = total_score;
+        free(array);
+    }
+
+    int best_match = NO_MATCH_FOUND;
+    int best_score = 0;
+    for (unsigned int i = 0 ; i < database->n_entries ; i++) {
+        float average_score = scores[i] / (float)n_matches[i];
+        if (n_matches[i] >= MIN_SIGNATURE_MATCHES)
+        if (average_score > best_score) {
+            best_score = average_score;
             best_match = i;
         }
     }
+
+    free(scores);
+    free(n_matches);
+
     return best_match;
 }

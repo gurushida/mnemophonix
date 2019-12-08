@@ -25,4 +25,7 @@
 // Returned when an input file does not look like a wave file at all
 #define NOT_A_WAVE_FILE -6
 
+// Returned when a search operation cannot find any match
+#define NO_MATCH_FOUND - 7
+
 #endif
