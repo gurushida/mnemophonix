@@ -309,6 +309,7 @@ void free_wav_reader(struct wav_reader* reader) {
 
 
 int read_samples(struct wav_reader* reader, float* *samples) {
+    fprintf(stderr, "Reading 44100Hz samples...\n");
     unsigned int n_samples = reader->data_chunk_size / reader->wBlockAlign;
     float* samples_44100Hz = (float*)malloc(n_samples * sizeof(float));
     if (samples_44100Hz == NULL) {
@@ -341,6 +342,8 @@ int read_samples(struct wav_reader* reader, float* *samples) {
 
     free(src_samples);
 
+    fprintf(stderr, "Resampling to 5512Hz...\n");
+
     // Now we have mono 44100Hz samples between 0 and 1. It is
     // time to resample to 5512Hz
     (*samples) = resample(samples_44100Hz, n_samples);
@@ -350,6 +353,7 @@ int read_samples(struct wav_reader* reader, float* *samples) {
     }
 
     // Finally let's normalize the samples
+    fprintf(stderr, "Normalizing samples...\n");
     normalize(*samples, n_samples / 8);
 
     return n_samples / 8;
