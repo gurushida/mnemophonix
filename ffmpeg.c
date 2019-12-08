@@ -18,13 +18,13 @@ static void parse_metadata(char* metadata, char* *artist, char* *track_title, ch
         if (len > 0 && buffer[len - 1] == '\n') {
             buffer[len - 1] = '\0';
         }
-        if (buffer == strstr(buffer, "artist=")) {
+        if ((*artist) == NULL && buffer == strstr(buffer, "artist=")) {
             *artist = strdup(buffer + strlen("artist="));
         }
-        if (buffer == strstr(buffer, "title=")) {
+        if ((*track_title) == NULL && buffer == strstr(buffer, "title=")) {
             *track_title = strdup(buffer + strlen("title="));
         }
-        if (buffer == strstr(buffer, "album=")) {
+        if ((*album_title) == NULL && buffer == strstr(buffer, "album=")) {
             *album_title = strdup(buffer + strlen("album="));
         }
     }
