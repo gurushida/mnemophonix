@@ -22,18 +22,28 @@ int main(int argc, char* argv[]) {
         || (!strcmp(argv[1], "search") && argc != 4)) {
 
         fprintf(stderr, "\n");
-        fprintf(stderr, "--- mnemophonix - An audio fingerprinting system ---\n");
+        fprintf(stderr, " ---                                                       ---\n");
+        fprintf(stderr, " \\  \\  mnemophonix - A simple audio fingerprinting system  \\  \\\n");
+        fprintf(stderr, " O  O                                                      O  O\n");
         fprintf(stderr, "\n");
         fprintf(stderr, "Usage:\n");
         fprintf(stderr, "\n");
         fprintf(stderr, "%s index <input>\n", argv[0]);
-        fprintf(stderr, "  Prints to stdout the index data generated for the given input file\n");
+        fprintf(stderr, "  Prints to stdout the index data generated for the given input file. Since\n");
+        fprintf(stderr, "  the index file format is a text one, you can create a database containing\n");
+        fprintf(stderr, "  multiple indexes like this:\n");
+        fprintf(stderr, "\n");
+        fprintf(stderr, "  $ %s index song1.mp3 > db\n", argv[0]);
+        fprintf(stderr, "  $ %s index song2.wav >> db\n", argv[0]);
+        fprintf(stderr, "  $ %s index movie.mp4 >> db\n", argv[0]);
         fprintf(stderr, "\n");
         fprintf(stderr, "%s search <input> <index>\n", argv[0]);
-        fprintf(stderr, "  Look for the given input file in the given index file\n");
+        fprintf(stderr, "  Looks for the given input file in the given index file\n");
         fprintf(stderr, "\n");
-        fprintf(stderr, "The input file format is 44100Hz 16-bit PCM. If it is not the case,\n");
-        fprintf(stderr, "an attempt will be made to generate such a file using ffmpeg.\n");
+        fprintf(stderr, "The input file format that this code can process is 44100Hz 16-bit PCM.\n");
+        fprintf(stderr, "If it is not the case, an attempt will be made to generate such a file using\n");
+        fprintf(stderr, "ffmpeg. Because ** ffmpeg rocks **, you can use this program with pretty\n");
+        fprintf(stderr, "much any audio or video file !\n");
         fprintf(stderr, "\n");
         return 1;
     }
