@@ -1,10 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
+
 #include "ffmpeg.h"
 #include "fingerprinting.h"
 #include "fingerprintio.h"
 #include "search.h"
+
+static long time_in_milliseconds() {
+    struct timeval tv;
+    gettimeofday(&tv,NULL);
+    return tv.tv_sec * 1000 + tv.tv_usec / 1000;
+}
 
 
 int main(int argc, char* argv[]) {
@@ -79,13 +87,18 @@ int main(int argc, char* argv[]) {
             }
         }
 
+        long before = time_in_milliseconds();
         printf("Searching...\n");
+
         int best_match = search(fingerprint, database_index);
+        long after = time_in_milliseconds();
+        printf("(Search took %ld ms)\n", after - before);
+
         if (best_match == -1) {
-            printf("No match found\n");
+            printf("\nNo match found\n\n");
             ret_value  = 1;
         } else {
-            printf("Found match: '%s'\n", database_index->entries[best_match]->filename);
+            printf("\nFound match: '%s'\n", database_index->entries[best_match]->filename);
             if (database_index->entries[best_match]->artist[0]) {
                 printf("Artist: %s\n", database_index->entries[best_match]->artist);
             }
@@ -95,6 +108,7 @@ int main(int argc, char* argv[]) {
             if (database_index->entries[best_match]->album_title[0]) {
                 printf("Album title: %s\n", database_index->entries[best_match]->album_title);
             }
+            printf("\n");
         }
         free_index(database_index);
     }
