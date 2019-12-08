@@ -59,7 +59,7 @@
  * @param bins Where to store the results. The array is supposed
  *                    large enough to hold 32 float values
  */
-void calculate_bins(float* real, float* imaginary, float* spectrogram);
+void calculate_bins(float* real, float* imaginary, float* bins);
 
 
 #endif

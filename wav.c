@@ -307,6 +307,40 @@ void free_wav_reader(struct wav_reader* reader) {
     free(reader);
 }
 
+int convert_samples(u_int8_t* src_samples, unsigned int src_size, float* *dst_samples) {
+    unsigned int n_samples = src_size / 4;
+    float* samples_44100Hz = (float*)malloc(n_samples * sizeof(float));
+    if (samples_44100Hz == NULL) {
+        return MEMORY_ERROR;
+    }
+
+    for (unsigned int i = 0 ; i < n_samples ; i++) {
+        unsigned int base = 4 * i;
+        u_int16_t sample1 = src_samples[base] + (src_samples[base + 1] << 8);
+        u_int16_t sample2 = src_samples[base + 2] + (src_samples[base + 3] << 8);
+
+        // To get a mono float sample, we need to take the average by
+        // dividing by the number of channels and then to normalize
+        // the value between -32767.0 and 32767.0 into a value between -1.0 and 1.0
+        float res = ((sample1 + sample2) / 2.0) / 32767.0;
+        samples_44100Hz[i] = res;
+    }
+
+    // Now we have mono 44100Hz samples between 0 and 1. It is
+    // time to resample to 5512Hz
+    (*dst_samples) = resample(samples_44100Hz, n_samples);
+    free(samples_44100Hz);
+    if ((*dst_samples) == NULL) {
+        return MEMORY_ERROR;
+    }
+
+    // Finally let's normalize the samples
+    normalize(*dst_samples, n_samples / 8);
+
+    return n_samples / 8;
+
+}
+
 
 int read_samples(struct wav_reader* reader, float* *samples) {
     fprintf(stderr, "Reading 44100Hz samples...\n");

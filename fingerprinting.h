@@ -27,4 +27,18 @@ int generate_fingerprint(const char* wav, struct signatures* *fingerprint,
                             char* *artist, char* *track_title, char* *album_title);
 
 
+/**
+ * Given an array of mono float 5512Hz samples, this function
+ * calculates an audio fingerprint.
+ *
+ * @param samples The samples
+ * @param size The number of samples
+ * @param fingerprint Where to store the fingerprint
+ * @return SUCCESS on success
+ *         MEMORY_ERROR in case of memory allocation error
+ *         FILE_TOO_SMALL if the sample array is too small to generate a fingerprint
+ */
+int generate_fingerprint_from_samples(float* samples, unsigned int size, struct signatures* *fingerprint);
+
+
 #endif

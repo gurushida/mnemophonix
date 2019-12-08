@@ -75,3 +75,33 @@ int generate_fingerprint(const char* wav, struct signatures* *fingerprint,
     *fingerprint = signatures;
     return SUCCESS;
 }
+
+
+int generate_fingerprint_from_samples(float* samples, unsigned int size, struct signatures* *fingerprint) {
+    if (size < SAMPLES_PER_FRAME) {
+        return FILE_TOO_SMALL;
+    }
+
+    struct spectral_images* spectral_images = build_spectral_images(samples, size);
+
+    if (spectral_images == NULL) {
+        return MEMORY_ERROR;
+    }
+
+    apply_Haar_transform(spectral_images);
+
+    struct rawfingerprints* rawfingerprints = build_raw_fingerprints(spectral_images);
+    free_spectral_images(spectral_images);
+    if (rawfingerprints == NULL) {
+        return MEMORY_ERROR;
+    }
+
+    struct signatures* signatures = build_signatures(rawfingerprints);
+    free_rawfingerprints(rawfingerprints);
+    if (signatures == NULL) {
+        return MEMORY_ERROR;
+    }
+
+    *fingerprint = signatures;
+    return SUCCESS;
+}

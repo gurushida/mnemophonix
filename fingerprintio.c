@@ -44,7 +44,7 @@ static int readline(FILE* f, char* buffer, unsigned int size, char* *dst) {
         return CANNOT_READ_FILE;
     }
 
-    int len = strlen(buffer);
+    int len = (int)strlen(buffer);
     if (len == 0 || buffer[len - 1] != '\n') {
         return DECODING_ERROR;
     }

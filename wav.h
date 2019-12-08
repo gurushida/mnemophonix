@@ -74,4 +74,19 @@ void free_wav_reader(struct wav_reader* reader);
 int read_samples(struct wav_reader* reader, float* *samples);
 
 
+/**
+ * Converts 44100Hz 16-bit PCM samplest to mono 5512Hz samples
+ * represented as float values between -1.0 and 1.0 and stores
+ * them in the given array.
+ *
+ * @param src_samples The samples to convert
+ * @param src_size The number of bytes in the source sample array
+ * @param dst_samples Where to allocate space for the results.
+ *                The caller is responsible for freeing this array
+ * @return the number of samples that were read on success
+ *         DECODING_ERROR in case of I/O error when reading the file
+ *         MEMORY_ERROR in case of memory allocation error
+ */
+int convert_samples(u_int8_t* src_samples, unsigned int src_size, float* *dst_samples);
+
 #endif
