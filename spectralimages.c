@@ -21,6 +21,14 @@ struct frames_to_bins_job {
 };
 
 
+struct build_spectral_images_job {
+    float* bins;
+    struct spectral_image* images;
+    unsigned int first_image;
+    unsigned int last_image;
+};
+
+
 /**
  * Returns the number of frames we can have when
  * taking frames of SAMPLES_PER_FRAME samples every
@@ -69,7 +77,7 @@ static void scale_to_full_spectrum(float* spectral_image) {
 }
 
 
-int frames_to_bins(float* samples, float* bins, float* hann_window, unsigned int first_frame, unsigned int last_frame) {
+static int frames_to_bins(float* samples, float* bins, float* hann_window, unsigned int first_frame, unsigned int last_frame) {
     // We will now apply a Fast Fourier Transform (FFT) to each
     // frame, which will produce an array of complex numbers
     float* temp = (float*)malloc(SAMPLES_PER_FRAME * sizeof(float));
@@ -101,6 +109,16 @@ int frames_to_bins(float* samples, float* bins, float* hann_window, unsigned int
 
 static void* launch_frames_to_bins_job(struct frames_to_bins_job* job) {
     job->return_code = frames_to_bins(job->samples, job->bins, job->hann_window, job->first_frame, job->last_frame);
+    return NULL;
+}
+
+
+static void* launch_build_spectral_images_job(struct build_spectral_images_job* job) {
+    unsigned int size = SPECTRAL_IMAGE_WIDTH * NUMBER_OF_BINS * sizeof(float);
+    for (unsigned int i = job->first_image ; i <= job->last_image ; i++) {
+        memcpy(job->images[i].image, &(job->bins[i * DISTANCE_BETWEEN_SPECTRAL_IMAGE_START * NUMBER_OF_BINS]), size);
+        scale_to_full_spectrum(job->images[i].image);
+    }
     return NULL;
 }
 
@@ -139,6 +157,7 @@ struct spectral_images* build_spectral_images(float* samples, unsigned int n_sam
     struct frames_to_bins_job jobs[N_THREADS];
     float* hann_window = get_Hann_window();
 
+    fprintf(stderr, "Creating bins...\n");
     unsigned int frames_per_thread = n_frames / N_THREADS;
     for (unsigned int k = 0 ; k < N_THREADS ; k++) {
         unsigned int start = k * frames_per_thread;
@@ -168,12 +187,28 @@ struct spectral_images* build_spectral_images(float* samples, unsigned int n_sam
         return NULL;
     }
 
+    fprintf(stderr, "Creating spectral images...\n");
+    struct build_spectral_images_job spectral_image_jobs[N_THREADS];
+
     // Now that we have calculated all the bins for all the frames,
     // it is time to build spectral images by grouping these bins
-    for (unsigned int i = 0 ; i < images->n_images ; i++) {
-        unsigned int size = SPECTRAL_IMAGE_WIDTH * NUMBER_OF_BINS * sizeof(float);
-        memcpy(images->images[i].image, &(bins[i * DISTANCE_BETWEEN_SPECTRAL_IMAGE_START * NUMBER_OF_BINS]), size);
-        scale_to_full_spectrum(images->images[i].image);
+
+    unsigned int images_per_thread = images->n_images / N_THREADS;
+    for (unsigned int k = 0 ; k < N_THREADS ; k++) {
+        unsigned int start = k * images_per_thread;
+        unsigned int end = (k == N_THREADS - 1)
+                        ? images->n_images - 1
+                        : (k + 1) * images_per_thread - 1;
+        spectral_image_jobs[k].images = images->images;
+        spectral_image_jobs[k].bins = bins;
+        spectral_image_jobs[k].first_image = start;
+        spectral_image_jobs[k].last_image = end;
+
+        pthread_create(&(thread[k]), NULL, (void* (*)(void*))launch_build_spectral_images_job, &(spectral_image_jobs[k]));
+    }
+
+    for (unsigned int k = 0 ; k < N_THREADS ; k++) {
+	    pthread_join(thread[k], NULL);
     }
 
     return images;
