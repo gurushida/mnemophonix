@@ -1,7 +1,17 @@
 #include <math.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "haar.h"
+
+#define N_THREADS 8
+
+
+struct haar_transform_job {
+    struct spectral_image* images;
+    unsigned int first_image;
+    unsigned int last_image;
+};
 
 
 /**
@@ -34,11 +44,8 @@ static void transform_array(float* data, unsigned int size) {
 
 /**
  * Transforms in place a spectral image.
- *
- * @param data The frame buffer
- * @param image_index The index of the image to transform
  */
-static void transform_image(struct spectral_image* image) {
+void transform_image(struct spectral_image* image) {
     // The 2D standard Haar transform consists of applying
     // the 1D Haar transform to each row of the image and then
     // to each column of the result
@@ -66,8 +73,33 @@ static void transform_image(struct spectral_image* image) {
 }
 
 
-void apply_Haar_transform(struct spectral_images* images) {
-    for (unsigned int i = 0 ; i < images->n_images ; i++) {
-        transform_image(&(images->images[i]));
+static void* launch_Haar_job(struct haar_transform_job* job) {
+    for (unsigned int i = job->first_image ; i <= job->last_image ; i++) {
+        transform_image(&(job->images[i]));
+    }
+
+    return NULL;
+}
+
+
+void apply_Haar_transform(struct spectral_images* spectral_images) {
+    pthread_t thread[N_THREADS];
+    struct haar_transform_job haar_job[N_THREADS];
+    unsigned int images_per_thread = spectral_images->n_images / N_THREADS;
+
+    for (unsigned int k = 0 ; k < N_THREADS ; k++) {
+        unsigned int start = k * images_per_thread;
+        unsigned int end = (k == N_THREADS - 1)
+                        ? spectral_images->n_images - 1
+                        : (k + 1) * images_per_thread - 1;
+        haar_job[k].images = spectral_images->images;
+        haar_job[k].first_image = start;
+        haar_job[k].last_image = end;
+
+        pthread_create(&(thread[k]), NULL, (void* (*)(void*))launch_Haar_job, &(haar_job[k]));
+    }
+    for (unsigned int k = 0 ; k < N_THREADS ; k++) {
+        pthread_join(thread[k], NULL);
     }
 }
+

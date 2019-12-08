@@ -7,8 +7,6 @@
 #include "spectralimages.h"
 #include "wav.h"
 
-
-
 int generate_fingerprint(const char* wav, struct signatures* *fingerprint,
                             char* *artist, char* *track_title, char* *album_title) {
     // Let's make sure we have a wave file we can read
@@ -57,8 +55,10 @@ int generate_fingerprint(const char* wav, struct signatures* *fingerprint,
     }
 
     fprintf(stderr, "Got %d spectral images\n", spectral_images->n_images);
+    fprintf(stderr, "Applying Haar transform to spectral images\n");
     apply_Haar_transform(spectral_images);
 
+    fprintf(stderr, "Building raw fingerprints\n");
     struct rawfingerprints* rawfingerprints = build_raw_fingerprints(spectral_images);
     free_spectral_images(spectral_images);
     if (rawfingerprints == NULL) {

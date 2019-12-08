@@ -22,11 +22,10 @@
  * getting a smaller image by using the same color for parts that
  * are very similar).
  *
- * The function applies the Haar transform to each spectral image to make
+ * The function applies the Haar transform to the given spectral images to make
  * it suitable for further compression. Since the Haar transform produces
  * for each image an output of the same size, this function will modify the
- * given data in place. If the number of frames is not divisible by 128,
- * the remaining frames at the end are left unmodified.
+ * given data in place.
  */
 void apply_Haar_transform(struct spectral_images* images);
 
