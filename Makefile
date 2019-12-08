@@ -1,4 +1,4 @@
-all: libmnemophonix.so mnemophonix
+all: libmnemophonix.so mnemophonix genperm
 
 SOURCES=wav.c fingerprinting.c fft.c logbins.c spectralimages.c haar.c rawfingerprints.c minhash.c permutations.c fingerprintio.c \
         resample.c audionormalizer.c hannwindow.c search.c ffmpeg.c
@@ -8,6 +8,9 @@ mnemophonix: main.c libmnemophonix.so
 
 libmnemophonix.so: $(SOURCES)
 	$(CC) -fPIC $(SOURCES) -shared -o libmnemophonix.so -Wall -Wextra -pedantic -std=c99
+
+genperm: generatepermutations.c
+	$(CC) generatepermutations.c -o genperm -Wall -Wextra -pedantic -std=c99
 
 clean:
 	rm -f mnemophonix libmnemophonix.so

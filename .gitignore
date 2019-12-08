@@ -4,6 +4,7 @@ data/
 
 .DS_Store
 mnemophonix
+genperm
 
 # Prerequisites
 *.d
