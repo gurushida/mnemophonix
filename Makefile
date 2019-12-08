@@ -7,7 +7,7 @@ mnemophonix: main.c libmnemophonix.so
 	$(CC) -lmnemophonix -L. main.c -Wl,-rpath,. -o mnemophonix -Wall -Wextra -pedantic -std=c99
 
 libmnemophonix.so: $(SOURCES)
-	$(CC) -fPIC $(SOURCES) -shared -o libmnemophonix.so -Wall -Wextra -pedantic -std=c99
+	$(CC) -fPIC $(SOURCES) -lpthread -shared -o libmnemophonix.so -Wall -Wextra -pedantic -std=c99
 
 genperm: generatepermutations.c
 	$(CC) generatepermutations.c -o genperm -Wall -Wextra -pedantic -std=c99

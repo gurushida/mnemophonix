@@ -1,9 +1,25 @@
 #include <math.h>
+#include <pthread.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "fft.h"
 #include "hannwindow.h"
 #include "spectralimages.h"
+
+
+#define N_THREADS 8
+
+
+struct frames_to_bins_job {
+    float* samples;
+    float* bins;
+    float* hann_window;
+    unsigned int first_frame;
+    unsigned int last_frame;
+    int return_code;
+};
+
 
 /**
  * Returns the number of frames we can have when
@@ -53,6 +69,42 @@ static void scale_to_full_spectrum(float* spectral_image) {
 }
 
 
+int frames_to_bins(float* samples, float* bins, float* hann_window, unsigned int first_frame, unsigned int last_frame) {
+    // We will now apply a Fast Fourier Transform (FFT) to each
+    // frame, which will produce an array of complex numbers
+    float* temp = (float*)malloc(SAMPLES_PER_FRAME * sizeof(float));
+    float* real = (float*)malloc(SAMPLES_PER_FRAME * sizeof(float));
+    float* imaginary = (float*)malloc(SAMPLES_PER_FRAME * sizeof(float));
+    if (temp == NULL || real == NULL || imaginary == NULL) {
+        free(temp);
+        free(real);
+        free(imaginary);
+        return MEMORY_ERROR;
+    }
+
+    for (unsigned int i = first_frame ; i <= last_frame ; i++) {
+        for (unsigned int j = 0 ; j < SAMPLES_PER_FRAME ; j++) {
+            // Before calculating the Fast Fourier Transform, we
+            // apply to each sample a coefficient to avoid spectral leakage
+            temp[j] = samples[i * INTERVAL_BETWEEN_FRAMES + j] * hann_window[j];
+        }
+        fft(temp, real, imaginary);
+        calculate_bins(real, imaginary, &(bins[i * NUMBER_OF_BINS]));
+    }
+
+    free(temp);
+    free(real);
+    free(imaginary);
+    return SUCCESS;
+}
+
+
+static void* launch_frames_to_bins_job(struct frames_to_bins_job* job) {
+    job->return_code = frames_to_bins(job->samples, job->bins, job->hann_window, job->first_frame, job->last_frame);
+    return NULL;
+}
+
+
 struct spectral_images* build_spectral_images(float* samples, unsigned int n_samples) {
     struct spectral_images* images = (struct spectral_images*)malloc(sizeof(struct spectral_images));
     if (images == NULL) {
@@ -83,31 +135,37 @@ struct spectral_images* build_spectral_images(float* samples, unsigned int n_sam
         return NULL;
     }
 
-    // We will now apply a Fast Fourier Transform (FFT) to each
-    // frame, which will produce an array of complex numbers
-    float* temp = (float*)malloc(SAMPLES_PER_FRAME * sizeof(float));
-    float* real = (float*)malloc(SAMPLES_PER_FRAME * sizeof(float));
-    float* imaginary = (float*)malloc(SAMPLES_PER_FRAME * sizeof(float));
-    if (temp == NULL || real == NULL || imaginary == NULL) {
-        free(temp);
-        free(real);
-        free(imaginary);
-        free(bins);
-        free(images);
-        free(images->images);
-        return NULL;
-    }
-
+    pthread_t thread[N_THREADS];
+    struct frames_to_bins_job jobs[N_THREADS];
     float* hann_window = get_Hann_window();
 
-    for (unsigned int i = 0 ; i < n_frames ; i++) {
-        for (unsigned int j = 0 ; j < SAMPLES_PER_FRAME ; j++) {
-            // Before calculating the Fast Fourier Transform, we
-            // apply to each sample a coefficient to avoid spectral leakage
-            temp[j] = samples[i * INTERVAL_BETWEEN_FRAMES + j] * hann_window[j];
+    unsigned int frames_per_thread = n_frames / N_THREADS;
+    for (unsigned int k = 0 ; k < N_THREADS ; k++) {
+        unsigned int start = k * frames_per_thread;
+        unsigned int end = (k == N_THREADS - 1)
+                        ? n_frames - 1
+                        : (k + 1) * frames_per_thread - 1;
+        jobs[k].samples = samples;
+        jobs[k].bins = bins;
+        jobs[k].hann_window = hann_window;
+        jobs[k].first_frame = start;
+        jobs[k].last_frame = end;
+        jobs[k].return_code = SUCCESS;
+
+        pthread_create(&(thread[k]), NULL, (void* (*)(void*))launch_frames_to_bins_job, &(jobs[k]));
+    }
+
+    int res = SUCCESS;
+    for (unsigned int k = 0 ; k < N_THREADS ; k++) {
+	    pthread_join(thread[k], NULL);
+        if (jobs[k].return_code == MEMORY_ERROR) {
+            res = MEMORY_ERROR;
         }
-        fft(temp, real, imaginary);
-        calculate_bins(real, imaginary, &(bins[i * NUMBER_OF_BINS]));
+    }
+
+    if (res == MEMORY_ERROR) {
+        free_spectral_images(images);
+        return NULL;
     }
 
     // Now that we have calculated all the bins for all the frames,
@@ -117,11 +175,6 @@ struct spectral_images* build_spectral_images(float* samples, unsigned int n_sam
         memcpy(images->images[i].image, &(bins[i * DISTANCE_BETWEEN_SPECTRAL_IMAGE_START * NUMBER_OF_BINS]), size);
         scale_to_full_spectrum(images->images[i].image);
     }
-
-    free(temp);
-    free(real);
-    free(imaginary);
-    free(bins);
 
     return images;
 }
