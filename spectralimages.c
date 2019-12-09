@@ -161,7 +161,6 @@ int build_spectral_images(float* samples, unsigned int n_samples, struct spectra
     struct frames_to_bins_job jobs[N_THREADS];
     float* hann_window = get_Hann_window();
 
-    fprintf(stderr, "Creating bins...\n");
     unsigned int frames_per_thread = n_frames / N_THREADS;
     for (unsigned int k = 0 ; k < N_THREADS ; k++) {
         unsigned int start = k * frames_per_thread;
@@ -191,7 +190,6 @@ int build_spectral_images(float* samples, unsigned int n_samples, struct spectra
         return MEMORY_ERROR;
     }
 
-    fprintf(stderr, "Creating spectral images...\n");
     struct build_spectral_images_job spectral_image_jobs[N_THREADS];
 
     int n_spectral_image_threads = N_THREADS;
