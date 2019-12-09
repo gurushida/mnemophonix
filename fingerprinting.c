@@ -78,7 +78,7 @@ int generate_fingerprint(const char* wav, struct signatures* *fingerprint,
 
 
 int generate_fingerprint_from_samples(float* samples, unsigned int size, struct signatures* *fingerprint) {
-    if (size < SAMPLES_PER_FRAME) {
+    if (size < SAMPLES_PER_FRAME * SPECTRAL_IMAGE_WIDTH) {
         return FILE_TOO_SMALL;
     }
 
