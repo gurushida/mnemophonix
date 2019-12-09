@@ -97,12 +97,17 @@ struct rawfingerprints* build_raw_fingerprints(struct spectral_images* haar_tran
         return NULL;
     }
 
+    int n_threads = N_THREADS;
+    if (haar_transformed_images->n_images < 2 * N_THREADS) {
+        n_threads = 1;
+    }
+
     pthread_t thread[N_THREADS];
     struct build_rawfingerprints_job jobs[N_THREADS];
-    unsigned int images_per_thread = haar_transformed_images->n_images / N_THREADS;
-    for (unsigned int k = 0 ; k < N_THREADS ; k++) {
+    unsigned int images_per_thread = haar_transformed_images->n_images / n_threads;
+    for (unsigned int k = 0 ; k < n_threads ; k++) {
         unsigned int start = k * images_per_thread;
-        unsigned int end = (k == N_THREADS - 1)
+        unsigned int end = (k == n_threads - 1)
                         ? haar_transformed_images->n_images - 1
                         : (k + 1) * images_per_thread - 1;
         jobs[k].images = haar_transformed_images->images;
@@ -113,7 +118,7 @@ struct rawfingerprints* build_raw_fingerprints(struct spectral_images* haar_tran
         pthread_create(&(thread[k]), NULL, (void* (*)(void*))launch_build_rawfingerprints, &(jobs[k]));
     }
 
-    for (unsigned int k = 0 ; k < N_THREADS ; k++) {
+    for (unsigned int k = 0 ; k < n_threads ; k++) {
 	    pthread_join(thread[k], NULL);
     }
 

@@ -83,13 +83,17 @@ static void* launch_Haar_job(struct haar_transform_job* job) {
 
 
 void apply_Haar_transform(struct spectral_images* spectral_images) {
+    int n_Haar_threads = N_THREADS;
+    if (spectral_images->n_images < 2 * N_THREADS) {
+        n_Haar_threads = 1;
+    }
     pthread_t thread[N_THREADS];
     struct haar_transform_job haar_job[N_THREADS];
-    unsigned int images_per_thread = spectral_images->n_images / N_THREADS;
+    unsigned int images_per_thread = spectral_images->n_images / n_Haar_threads;
 
-    for (unsigned int k = 0 ; k < N_THREADS ; k++) {
+    for (unsigned int k = 0 ; k < n_Haar_threads ; k++) {
         unsigned int start = k * images_per_thread;
-        unsigned int end = (k == N_THREADS - 1)
+        unsigned int end = (k == n_Haar_threads - 1)
                         ? spectral_images->n_images - 1
                         : (k + 1) * images_per_thread - 1;
         haar_job[k].images = spectral_images->images;
@@ -98,7 +102,7 @@ void apply_Haar_transform(struct spectral_images* spectral_images) {
 
         pthread_create(&(thread[k]), NULL, (void* (*)(void*))launch_Haar_job, &(haar_job[k]));
     }
-    for (unsigned int k = 0 ; k < N_THREADS ; k++) {
+    for (unsigned int k = 0 ; k < n_Haar_threads ; k++) {
         pthread_join(thread[k], NULL);
     }
 }

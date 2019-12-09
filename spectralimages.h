@@ -1,6 +1,7 @@
 #ifndef _SPECTRALIMAGES_H
 #define _SPECTRALIMAGES_H
 
+#include "errors.h"
 #include "logbins.h"
 
 
@@ -64,9 +65,12 @@ struct spectral_images {
  *
  * @param samples An array of float samples in [-1.0;1.0] at 5512Hz
  * @param n_samples The size of the array
- * @return The calculated spectral images or NULL in case of memory allocation error
+ * @param images Where to store the results
+ * @return SUCCESS on success
+ *         FILE_TOO_SMALL if there are not enough samples to compute at least one frame
+ *         MEMORY_ERROR in case of memory allocation error
  */
-struct spectral_images* build_spectral_images(float* samples, unsigned int n_samples);
+int build_spectral_images(float* samples, unsigned int n_samples, struct spectral_images* *images);
 
 
 /**

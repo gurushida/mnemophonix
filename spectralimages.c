@@ -123,18 +123,22 @@ static void* launch_build_spectral_images_job(struct build_spectral_images_job* 
 }
 
 
-struct spectral_images* build_spectral_images(float* samples, unsigned int n_samples) {
-    struct spectral_images* images = (struct spectral_images*)malloc(sizeof(struct spectral_images));
-    if (images == NULL) {
-        return NULL;
+int build_spectral_images(float* samples, unsigned int n_samples, struct spectral_images* *images) {
+    unsigned int n_frames = get_n_frames(n_samples);
+    if (n_frames < SPECTRAL_IMAGE_WIDTH) {
+        return FILE_TOO_SMALL;
     }
 
-    unsigned int n_frames = get_n_frames(n_samples);
-    images->n_images = get_n_images(n_frames);
-    images->images = (struct spectral_image*)malloc(images->n_images * sizeof(struct spectral_image));
-    if (images->images == NULL) {
+    (*images) = (struct spectral_images*)malloc(sizeof(struct spectral_images));
+    if ((*images) == NULL) {
+        return MEMORY_ERROR;
+    }
+
+    (*images)->n_images = get_n_images(n_frames);
+    (*images)->images = (struct spectral_image*)malloc((*images)->n_images * sizeof(struct spectral_image));
+    if ((*images)->images == NULL) {
         free(images);
-        return NULL;
+        return MEMORY_ERROR;
     }
 
     // An array of size (n_frames x NUMBER_OF_BINS) that gives for
@@ -149,8 +153,8 @@ struct spectral_images* build_spectral_images(float* samples, unsigned int n_sam
     float* bins = (float*)malloc(n_frames * NUMBER_OF_BINS * sizeof(float));
     if (bins == NULL) {
         free(images);
-        free(images->images);
-        return NULL;
+        free((*images)->images);
+        return MEMORY_ERROR;
     }
 
     pthread_t thread[N_THREADS];
@@ -183,35 +187,39 @@ struct spectral_images* build_spectral_images(float* samples, unsigned int n_sam
     }
 
     if (res == MEMORY_ERROR) {
-        free_spectral_images(images);
-        return NULL;
+        free_spectral_images((*images));
+        return MEMORY_ERROR;
     }
 
     fprintf(stderr, "Creating spectral images...\n");
     struct build_spectral_images_job spectral_image_jobs[N_THREADS];
 
+    int n_spectral_image_threads = N_THREADS;
+    if ((*images)->n_images < 2 * N_THREADS) {
+        n_spectral_image_threads = 1;
+    }
+
     // Now that we have calculated all the bins for all the frames,
     // it is time to build spectral images by grouping these bins
 
-    unsigned int images_per_thread = images->n_images / N_THREADS;
-    for (unsigned int k = 0 ; k < N_THREADS ; k++) {
+    unsigned int images_per_thread = (*images)->n_images / n_spectral_image_threads;
+    for (unsigned int k = 0 ; k < n_spectral_image_threads ; k++) {
         unsigned int start = k * images_per_thread;
-        unsigned int end = (k == N_THREADS - 1)
-                        ? images->n_images - 1
+        unsigned int end = (k == n_spectral_image_threads - 1)
+                        ? (*images)->n_images - 1
                         : (k + 1) * images_per_thread - 1;
-        spectral_image_jobs[k].images = images->images;
+        spectral_image_jobs[k].images = (*images)->images;
         spectral_image_jobs[k].bins = bins;
         spectral_image_jobs[k].first_image = start;
         spectral_image_jobs[k].last_image = end;
-
         pthread_create(&(thread[k]), NULL, (void* (*)(void*))launch_build_spectral_images_job, &(spectral_image_jobs[k]));
     }
 
-    for (unsigned int k = 0 ; k < N_THREADS ; k++) {
+    for (unsigned int k = 0 ; k < n_spectral_image_threads ; k++) {
 	    pthread_join(thread[k], NULL);
     }
 
-    return images;
+    return SUCCESS;
 }
 
 
