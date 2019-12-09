@@ -53,15 +53,17 @@ void startCapture(struct index* database_index, struct lsh* lsh) {
 
     dispatch_queue_t audioDataOutputQueue = dispatch_queue_create("AudioDataOutputQueue", DISPATCH_QUEUE_SERIAL);
     MicRecorder *controller = [[MicRecorder alloc] init];
+    int nBytesInBuffer;
     uint8_t pcm_buffer[TEN_SECONDS];
-    [controller setParameters:pcm_buffer mutex:&audio_mutex condition:&condition];
+    [controller setParameters:pcm_buffer nBytesInBuffer:&nBytesInBuffer mutex:&audio_mutex condition:&condition];
     [output setSampleBufferDelegate:controller queue:audioDataOutputQueue];
     
     int last_match = -1;
     while (true) {
         pthread_cond_wait(&condition, &mutex);
+        pthread_mutex_lock(&audio_mutex);
         float* samples;
-        int res = convert_samples(pcm_buffer, TEN_SECONDS, &samples);
+        int res = convert_samples(pcm_buffer, nBytesInBuffer, &samples);
         pthread_mutex_unlock(&audio_mutex);
         
         if (res > 0) {

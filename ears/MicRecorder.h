@@ -5,6 +5,7 @@
 @interface MicRecorder : NSObject <AVCaptureAudioDataOutputSampleBufferDelegate> {}
 
 - (void)setParameters:(u_int8_t*)buffer
+            nBytesInBuffer:(int*)nBytesInBuffer
             mutex:(pthread_mutex_t*)mutex
             condition:(pthread_cond_t*)cond;
 

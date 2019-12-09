@@ -21,6 +21,7 @@
 #define ONE_SECOND (44100 * 4)
 
 u_int8_t pcm_buffer[BUFSIZE];
+int *nBytesInBuffer;
 unsigned int pos_in_buffer = 0;
 
 u_int8_t* exchange_pcm_buffer;
@@ -29,11 +30,13 @@ pthread_cond_t* condition;
 
 
 -(void)setParameters:(u_int8_t*)buffer
+                    nBytesInBuffer:(int*)n
                     mutex:(pthread_mutex_t*)mutex
                     condition:(pthread_cond_t*)cond;
 
 {
     exchange_pcm_buffer = buffer;
+    nBytesInBuffer = n;
     audio_mutex = mutex;
     condition = cond;
 }
@@ -72,6 +75,7 @@ pthread_cond_t* condition;
     
     if (seconds_before != seconds_after) {
         pthread_mutex_lock(audio_mutex);
+        (*nBytesInBuffer) = pos_in_buffer;
         memcpy(exchange_pcm_buffer, pcm_buffer, TEN_SECONDS);
         pthread_mutex_unlock(audio_mutex);
         pthread_cond_signal(condition);
