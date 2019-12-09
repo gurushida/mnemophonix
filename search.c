@@ -18,7 +18,11 @@
 
 // Minimum number of full signature matches that an audio sample must have
 // with a given database entry to be retained
-#define  MIN_SIGNATURE_MATCHES 2
+#define MIN_SIGNATURE_MATCHES 10
+
+// Minimum average score that an audio sample must have
+// with a given database entry to be retained
+#define MIN_AVERAGE_SCORE 30
 
 
 /**
@@ -111,7 +115,7 @@ int search(struct signatures* sample, struct index* database, struct lsh* lsh) {
     int best_score = 0;
     for (unsigned int i = 0 ; i < database->n_entries ; i++) {
         float average_score = scores[i] / (float)n_matches[i];
-        if (n_matches[i] >= MIN_SIGNATURE_MATCHES)
+        if (n_matches[i] >= MIN_SIGNATURE_MATCHES && average_score >= MIN_AVERAGE_SCORE)
         if (average_score > best_score) {
             best_score = average_score;
             best_match = i;
