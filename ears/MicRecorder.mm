@@ -27,7 +27,7 @@ unsigned int pos_in_buffer = 0;
 u_int8_t* exchange_pcm_buffer;
 pthread_mutex_t* audio_mutex;
 pthread_cond_t* condition;
-
+char searchHit = 0;
 
 -(void)setParameters:(u_int8_t*)buffer
                     nBytesInBuffer:(int*)n
@@ -39,6 +39,13 @@ pthread_cond_t* condition;
     nBytesInBuffer = n;
     audio_mutex = mutex;
     condition = cond;
+}
+
+- (void)notifyMatch
+{
+    pthread_mutex_lock(audio_mutex);
+    searchHit = 1;
+    pthread_mutex_unlock(audio_mutex);
 }
 
 
@@ -62,6 +69,16 @@ pthread_cond_t* condition;
 
     CMSampleBufferCopyPCMDataIntoAudioBufferList(sampleBuffer, 0, (uint32_t)numberOfFrames, &audioBufferList);
     
+    pthread_mutex_lock(audio_mutex);
+    if (searchHit) {
+        // When we have had a hit, we want to reset the buffer so that
+        // if we switch to a different song, we won't try to analyse
+        // the data already identified
+        pos_in_buffer = 0;
+        searchHit = 0;
+    }
+    pthread_mutex_unlock(audio_mutex);
+
     memcpy(pcm_buffer + pos_in_buffer, data, total);
     
     int seconds_before = pos_in_buffer / ONE_SECOND;
@@ -73,7 +90,7 @@ pthread_cond_t* condition;
         pos_in_buffer -= ONE_SECOND;
     }
     
-    if (seconds_before != seconds_after) {
+    if (seconds_before != seconds_after && seconds_after >= 2) {
         pthread_mutex_lock(audio_mutex);
         (*nBytesInBuffer) = pos_in_buffer;
         memcpy(exchange_pcm_buffer, pcm_buffer, TEN_SECONDS);

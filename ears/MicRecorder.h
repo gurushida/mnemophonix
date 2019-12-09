@@ -9,4 +9,6 @@
             mutex:(pthread_mutex_t*)mutex
             condition:(pthread_cond_t*)cond;
 
+- (void)notifyMatch;
+
 @end

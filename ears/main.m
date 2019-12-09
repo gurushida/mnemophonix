@@ -86,6 +86,7 @@ void startCapture(struct index* database_index, struct lsh* lsh) {
                         printf("Album title: %s\n", database_index->entries[best_match]->album_title);
                     }
                     printf("\n");
+                    [controller notifyMatch];
                 }
             }
         }
