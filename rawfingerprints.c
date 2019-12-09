@@ -7,6 +7,14 @@
 
 #define N_THREADS 8
 
+#define TOP_WAVELET_THRESHOLD 1.0
+
+// If the number of wavelets with an absolute value above
+// TOP_WAVELET_THRESHOLD is lower than MIN_WAVELETS, we
+// will consider the frame to be silent and will not generate
+// a fingerprint for it
+#define MIN_WAVELETS 10
+
 
 struct build_rawfingerprints_job {
     struct spectral_image* images;
@@ -45,7 +53,13 @@ static int compare_by_absolute_values(struct coeff_and_index* a, struct coeff_an
 }
 
 
-static void convert_top_wavelets(struct coeff_and_index* sorted_data, struct rawfingerprint* fp) {
+/**
+ * Converts the top 200 wavelets to 01, 10 or 00 depending on their sign.
+ * Returns the number of those top wavelets with an absolute value
+ * above TOP_WAVELET_THRESHOLD.
+ */
+static int convert_top_wavelets(struct coeff_and_index* sorted_data, struct rawfingerprint* fp) {
+    int n = 0;
     for (unsigned int i = 0 ; i < TOP_WAVELETS ; i++) {
         if (sorted_data[i].coeff > 0.001) {
             int bit_pos = 2 * sorted_data[i].index;
@@ -54,7 +68,9 @@ static void convert_top_wavelets(struct coeff_and_index* sorted_data, struct raw
             int bit_pos = 2 * sorted_data[i].index + 1;
             fp->bit_array[bit_pos / 8] |= (1 << (bit_pos % 8));
         }
+        if (fabsf(sorted_data[i].coeff) > TOP_WAVELET_THRESHOLD) n++;
     }
+    return n;
 }
 
 
@@ -75,7 +91,9 @@ static void* launch_build_rawfingerprints(struct build_rawfingerprints_job* job)
 
         // Let's retain the 200 highest wavelet coefficients and convert them
         // to 01, 10 or 00 whether they are negative, positive or null
-        convert_top_wavelets(temp, &(job->fingerprints[i]));
+        int n = convert_top_wavelets(temp, &(job->fingerprints[i]));
+
+        job->fingerprints[i].is_silence = (n < MIN_WAVELETS);
     }
 
     return NULL;
@@ -97,7 +115,7 @@ struct rawfingerprints* build_raw_fingerprints(struct spectral_images* haar_tran
         return NULL;
     }
 
-    int n_threads = N_THREADS;
+    unsigned int n_threads = N_THREADS;
     if (haar_transformed_images->n_images < 2 * N_THREADS) {
         n_threads = 1;
     }

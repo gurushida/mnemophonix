@@ -83,7 +83,7 @@ static void* launch_Haar_job(struct haar_transform_job* job) {
 
 
 void apply_Haar_transform(struct spectral_images* spectral_images) {
-    int n_Haar_threads = N_THREADS;
+    unsigned int n_Haar_threads = N_THREADS;
     if (spectral_images->n_images < 2 * N_THREADS) {
         n_Haar_threads = 1;
     }

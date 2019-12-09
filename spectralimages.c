@@ -192,7 +192,7 @@ int build_spectral_images(float* samples, unsigned int n_samples, struct spectra
 
     struct build_spectral_images_job spectral_image_jobs[N_THREADS];
 
-    int n_spectral_image_threads = N_THREADS;
+    unsigned int n_spectral_image_threads = N_THREADS;
     if ((*images)->n_images < 2 * N_THREADS) {
         n_spectral_image_threads = 1;
     }

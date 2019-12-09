@@ -21,6 +21,10 @@
  * tri-state value as a 2-bit value (00, 01 or 10).
  */
 struct rawfingerprint {
+    // If not 0, means that this fingerprint is too close
+    // to silence and should be skipped
+    char is_silence;
+
     u_int8_t bit_array[RAW_FINGERPRINT_SIZE];
 };
 

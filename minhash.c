@@ -29,7 +29,7 @@ static int calculate_signature(struct rawfingerprint* fp, struct signature* sign
 
 
 struct signatures* build_signatures(struct rawfingerprints* rawfingerprints) {
-    // Let's allocate as many singatures as there are fingerprints
+    // Let's allocate as many signatures as there are fingerprints
     // We will just not fill up all the array in case of degenerate signatures
     struct signatures* signatures = (struct signatures*)malloc(sizeof(struct signatures));
     if (signatures == NULL) {
@@ -44,7 +44,7 @@ struct signatures* build_signatures(struct rawfingerprints* rawfingerprints) {
 
     signatures->n_signatures = 0;
     for (unsigned int i = 0 ; i < rawfingerprints->size ; i++) {
-        if (calculate_signature(&(rawfingerprints->fingerprints[i]), &(signatures->signatures[signatures->n_signatures]))) {
+        if (!rawfingerprints->fingerprints[i].is_silence && calculate_signature(&(rawfingerprints->fingerprints[i]), &(signatures->signatures[signatures->n_signatures]))) {
             // Let's increase the counter if we have actually calculated a signature
             (signatures->n_signatures)++;
         }
