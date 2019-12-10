@@ -66,7 +66,7 @@ Track title: OTP
 Album title: DEF CON 26: The Official Soundtrack
 ```
 
-## Cool, but it would be cooler to guess straight from the microphone...
+## Cool, but it would be even cooler to guess straight from the microphone...
 ...which is why there is a companion program for MacOS, written in Objective C.
 You can build it with ```xcodebuild``` and then run it with your database, which
 will print on the standard output any identified audio entry:
