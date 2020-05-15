@@ -4,7 +4,7 @@ SOURCES=wav.c fingerprinting.c fft.c logbins.c spectralimages.c haar.c rawfinger
         resample.c audionormalizer.c hannwindow.c search.c ffmpeg.c lsh.c
 
 mnemophonix: main.c libmnemophonix.so
-	$(CC) -lmnemophonix -L. main.c -Wl,-rpath,. -o mnemophonix -Wall -Wextra -pedantic
+	$(CC) -L. main.c -lmnemophonix -lm -Wl,-rpath,. -o mnemophonix -Wall -Wextra -pedantic
 
 libmnemophonix.so: $(SOURCES)
 	$(CC) -fPIC $(SOURCES) -lpthread -shared -o libmnemophonix.so -Wall -Wextra -pedantic
