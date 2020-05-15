@@ -25,7 +25,7 @@ struct rawfingerprint {
     // to silence and should be skipped
     char is_silence;
 
-    u_int8_t bit_array[RAW_FINGERPRINT_SIZE];
+    uint8_t bit_array[RAW_FINGERPRINT_SIZE];
 };
 
 

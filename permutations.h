@@ -26,7 +26,7 @@
  * @return An array of PERMUTATION_LENGTH integers between 0 and 8191
  *         or NULL if n is invalid
  */
-u_int16_t* get_permutation(unsigned int n);
+uint16_t* get_permutation(unsigned int n);
 
 
 #endif

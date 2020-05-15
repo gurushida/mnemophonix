@@ -16,11 +16,11 @@ struct wav_reader {
 
     // This are the information in the format chunk
     int16_t wFormatTag;
-    u_int16_t wChannels;
+    uint16_t wChannels;
     u_int32_t dwSamplesPerSec;
     u_int32_t dwAvgBytesPerSec;
-    u_int16_t wBlockAlign;
-    u_int16_t wBitsPerSample;
+    uint16_t wBlockAlign;
+    uint16_t wBitsPerSample;
 
     // The start position of the sample data bytes given in bytes
     // from the beginning of the file
@@ -87,6 +87,6 @@ int read_samples(struct wav_reader* reader, float* *samples);
  *         DECODING_ERROR in case of I/O error when reading the file
  *         MEMORY_ERROR in case of memory allocation error
  */
-int convert_samples(u_int8_t* src_samples, unsigned int src_size, float* *dst_samples);
+int convert_samples(uint8_t* src_samples, unsigned int src_size, float* *dst_samples);
 
 #endif

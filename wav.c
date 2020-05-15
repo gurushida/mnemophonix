@@ -19,7 +19,7 @@
  * in the given buffer that is supposed to be large enough.
  * Returns 1 on success; 0 otherwise.
  */
-static int read_bytes(FILE* f, size_t n, u_int8_t* buffer) {
+static int read_bytes(FILE* f, size_t n, uint8_t* buffer) {
     size_t res = fread(buffer, 1, n, f);
     return res == n;
 }
@@ -32,7 +32,7 @@ static int read_bytes(FILE* f, size_t n, u_int8_t* buffer) {
  * Returns 1 on success; 0 otherwise.
  */
 static int read_uint32(struct wav_reader* reader, u_int32_t *n) {
-    u_int8_t t[4];
+    uint8_t t[4];
     if (!read_bytes(reader->f, 4, t)) {
         return 0;
     }
@@ -48,8 +48,8 @@ static int read_uint32(struct wav_reader* reader, u_int32_t *n) {
  *
  * Returns 1 on success; 0 otherwise.
  */
-static int read_uint16(struct wav_reader* reader, u_int16_t *n) {
-    u_int8_t t[2];
+static int read_uint16(struct wav_reader* reader, uint16_t *n) {
+    uint8_t t[2];
     if (!read_bytes(reader->f, 2, t)) {
         return 0;
     }
@@ -66,7 +66,7 @@ static int read_uint16(struct wav_reader* reader, u_int16_t *n) {
  * Returns 1 on success; 0 otherwise.
  */
 static int read_int16(struct wav_reader* reader, int16_t *n) {
-    u_int8_t t[2];
+    uint8_t t[2];
     if (!read_bytes(reader->f, 2, t)) {
         return 0;
     }
@@ -86,7 +86,7 @@ static int read_int16(struct wav_reader* reader, int16_t *n) {
  * Returns 1 on success; 0 otherwise.
  */
 static int read_file_header(struct wav_reader* reader) {
-    u_int8_t t[4];
+    uint8_t t[4];
 
     if (!read_bytes(reader->f, 4, t) || 0 != memcmp(t, "RIFF", 4)) {
         return 0;
@@ -116,7 +116,7 @@ static int read_file_header(struct wav_reader* reader) {
  *                                 integer 16-bit 44100Hz PCM wave file
  */
 static int read_format_chunk(struct wav_reader* reader) {
-    u_int8_t t[4];
+    uint8_t t[4];
     if (!read_bytes(reader->f, 4, t) || 0 != memcmp(t, "fmt ", 4)) {
         return DECODING_ERROR;
     }
@@ -156,7 +156,7 @@ static int read_format_chunk(struct wav_reader* reader) {
  *         DECODING_ERROR if the expected data cannot be read from the file
  */
 static int skip_optional_chunks(struct wav_reader* reader) {
-    u_int8_t t[4];
+    uint8_t t[4];
     u_int32_t chunk_size;
     while (1) {
         if (!read_bytes(reader->f, 4, t) || !read_uint32(reader, &chunk_size)) {
@@ -194,7 +194,7 @@ static int read_info(struct wav_reader* reader) {
         return DECODING_ERROR;
     }
 
-    u_int8_t t[4];
+    uint8_t t[4];
     u_int32_t size;
     if (!read_bytes(reader->f, 4, t) || !read_uint32(reader, &size)) {
         return DECODING_ERROR;
@@ -230,7 +230,7 @@ static int read_info(struct wav_reader* reader) {
             if (s == NULL) {
                 return MEMORY_ERROR;
             }
-            if (!read_bytes(reader->f, size, (u_int8_t*)s)) {
+            if (!read_bytes(reader->f, size, (uint8_t*)s)) {
                 return DECODING_ERROR;
             }
             s[size] = '\0';
@@ -307,7 +307,7 @@ void free_wav_reader(struct wav_reader* reader) {
     free(reader);
 }
 
-int convert_samples(u_int8_t* src_samples, unsigned int src_size, float* *dst_samples) {
+int convert_samples(uint8_t* src_samples, unsigned int src_size, float* *dst_samples) {
     unsigned int n_samples = src_size / 4;
     float* samples_44100Hz = (float*)malloc(n_samples * sizeof(float));
     if (samples_44100Hz == NULL) {
@@ -316,8 +316,8 @@ int convert_samples(u_int8_t* src_samples, unsigned int src_size, float* *dst_sa
 
     for (unsigned int i = 0 ; i < n_samples ; i++) {
         unsigned int base = 4 * i;
-        u_int16_t sample1 = src_samples[base] + (src_samples[base + 1] << 8);
-        u_int16_t sample2 = src_samples[base + 2] + (src_samples[base + 3] << 8);
+        uint16_t sample1 = src_samples[base] + (src_samples[base + 1] << 8);
+        uint16_t sample2 = src_samples[base + 2] + (src_samples[base + 3] << 8);
 
         // To get a mono float sample, we need to take the average by
         // dividing by the number of channels and then to normalize
@@ -351,7 +351,7 @@ int read_samples(struct wav_reader* reader, float* *samples) {
     }
 
     int n_src_bytes_for_one_dest_sample = reader->wBlockAlign;
-    u_int8_t* src_samples = (u_int8_t*)malloc(n_src_bytes_for_one_dest_sample);
+    uint8_t* src_samples = (uint8_t*)malloc(n_src_bytes_for_one_dest_sample);
     if (src_samples == NULL) {
         return DECODING_ERROR;
     }
@@ -364,7 +364,7 @@ int read_samples(struct wav_reader* reader, float* *samples) {
         int sum = 0;
         for (unsigned int j = 0 ; j < reader->wChannels ; j++) {
             // Each 16-bit sample must be converted to a signed int
-            u_int16_t sample = src_samples[2 * j] + (src_samples[2 * j + 1] << 8);
+            uint16_t sample = src_samples[2 * j] + (src_samples[2 * j + 1] << 8);
             sum +=  (int16_t)sample;
         }
         // To get a mono float sample, we need to take the average by

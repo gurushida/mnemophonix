@@ -29,7 +29,7 @@
  * Returns the number of bytes that are identical between
  * the given hashes.
  */
-static unsigned int compare_hashes(u_int8_t* hash1, uint8_t* hash2) {
+static unsigned int compare_hashes(uint8_t* hash1, uint8_t* hash2) {
     unsigned int n = 0;
     for (unsigned int i = 0 ; i < SIGNATURE_LENGTH ; i++) {
         if (hash1[i] == hash2[i]) {

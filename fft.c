@@ -3,15 +3,15 @@
 #include <string.h>
 #include "fft.h"
 
-static u_int16_t reversed[2048] = { 0xFFFF };
+static uint16_t reversed[2048] = { 0xFFFF };
 
 /**
  * Given a 16-bit value like 00000ABCDEFGHIJK, this
  * returns the value obtained when reversing the 11
  * rightmost bits (00000KJIHGFEDCBA).
  */
-static u_int16_t reverse_bits(u_int16_t n) {
-    u_int16_t res = 0;
+static uint16_t reverse_bits(uint16_t n) {
+    uint16_t res = 0;
     for (int i = 0 ; i < 11 ; i++) {
         int bit = n & (1 << i);
         if (bit) {

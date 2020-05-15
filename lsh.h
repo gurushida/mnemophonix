@@ -78,7 +78,7 @@ void free_signature_list(struct signature_list* list);
  * @return The length of the list on success
  *         MEMORY_ERROR in case of memory allocation error
  */
-int get_matches(struct lsh* tables, u_int8_t* hash, struct signature_list* *list);
+int get_matches(struct lsh* tables, uint8_t* hash, struct signature_list* *list);
 
 
 #endif

@@ -138,14 +138,14 @@ static int read_entry(FILE* f, struct index_entry* *entry) {
             free_index_entry(*entry);
             return DECODING_ERROR;
         }
-        u_int8_t* signature =  &((*entry)->signatures->signatures[i].minhash[0]);
+        uint8_t* signature =  &((*entry)->signatures->signatures[i].minhash[0]);
         int tmp;
         for (unsigned int j = 0 ; j < SIGNATURE_LENGTH ; j++) {
             if (1 != sscanf(&(buffer[2 * j]), "%2x", &tmp)) {
                 free_index_entry(*entry);
                 return DECODING_ERROR;
             }
-            signature[j] = (u_int8_t)tmp;
+            signature[j] = (uint8_t)tmp;
         }
     }
 

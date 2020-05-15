@@ -16,7 +16,7 @@ struct signature {
     // 200/8192 bits set to 1, which is on average 1/40. By examining
     // 255 values, we have good probability to find a bit set to 1, so
     // this should not reduce much the precision of the results
-    u_int8_t minhash[SIGNATURE_LENGTH];
+    uint8_t minhash[SIGNATURE_LENGTH];
 };
 
 

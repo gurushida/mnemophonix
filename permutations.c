@@ -4,7 +4,7 @@
 
 #include "permutations.h"
 
-static u_int16_t permutations[N_PERMUTATIONS][PERMUTATION_LENGTH] = {
+static uint16_t permutations[N_PERMUTATIONS][PERMUTATION_LENGTH] = {
    {
        532, 5740, 4559, 4197, 2086, 1876, 4157,  885, 2716, 7763, 6951, 4160, 6112, 1935, 4882, 6439,
         58, 2037, 3133, 5122, 3899, 6082, 5878, 1372, 4634,  491, 6284,   16, 2456, 3651, 5038, 6358,
@@ -1808,7 +1808,7 @@ static u_int16_t permutations[N_PERMUTATIONS][PERMUTATION_LENGTH] = {
 };
 
 
-u_int16_t* get_permutation(unsigned int n) {
+uint16_t* get_permutation(unsigned int n) {
    return &(permutations[n][0]);
 }
 
