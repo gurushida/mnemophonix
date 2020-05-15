@@ -6,7 +6,7 @@
 #define MINIMUM_FREQUENCY 318
 #define MAXIMUM_FREQUENCY 2000
 
-static u_int16_t bin_indexes[NUMBER_OF_BINS + 1] = { 0xFFFF };
+static uint16_t bin_indexes[NUMBER_OF_BINS + 1] = { 0xFFFF };
 
 
 /**

@@ -13,10 +13,10 @@
 static int calculate_signature(struct rawfingerprint* fp, struct signature* signature) {
     int meaningful_signature = 0;
     for (unsigned int i = 0 ; i < SIGNATURE_LENGTH ; i++) {
-        u_int16_t* permutation = get_permutation(i);
+        uint16_t* permutation = get_permutation(i);
         signature->minhash[i] = PERMUTATION_LENGTH;
         for (unsigned int j = 0 ; j < PERMUTATION_LENGTH ; j++) {
-            u_int16_t bit_index = permutation[j];
+            uint16_t bit_index = permutation[j];
             if (fp->bit_array[bit_index / 8] & (1 << (bit_index % 8))) {
                 meaningful_signature = 1;
                 signature->minhash[i] = j;
