@@ -71,7 +71,7 @@ struct lsh* create_hash_tables(struct index* database) {
         for (unsigned int j = 0 ; j < database->entries[i]->signatures->n_signatures ; j++) {
             uint8_t* hash = database->entries[i]->signatures->signatures[j].minhash;
             for (unsigned int k = 0 ; k < N_BUCKETS ; k++) {
-                u_int32_t index = get_minhash(hash, k) % tables->size;
+                uint32_t index = get_minhash(hash, k) % tables->size;
                 struct signature_list* tmp = new_signature_list(i, j, tables->buckets[k][index]);
                 if (tmp == NULL) {
                     free_hash_tables(tables);
@@ -91,7 +91,7 @@ int get_matches(struct lsh* tables, uint8_t* hash, struct signature_list* *list)
     int n = 0;
 
     for (unsigned int i = 0 ; i < N_BUCKETS ; i++) {
-        u_int32_t index = get_minhash(hash, i) % tables->size;
+        uint32_t index = get_minhash(hash, i) % tables->size;
         struct signature_list* tmp = tables->buckets[i][index];
 
         // Let's add all these matches to our list
