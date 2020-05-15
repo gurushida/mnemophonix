@@ -47,7 +47,7 @@ char* generate_wave_file(char* input, char* *artist, char* *track_title, char* *
         case -1: return NULL;
         case 0: {
             // Child process
-            execlp("ffmpeg", "ffmpeg", "-i", input, "-acodec", "pcm_s16le", "-ar", "44100", "-f", "wav", wav, "-f", "ffmetadata", metadata);
+            execlp("ffmpeg", "ffmpeg", "-i", input, "-acodec", "pcm_s16le", "-ar", "44100", "-f", "wav", wav, "-f", "ffmetadata", metadata, NULL);
             return NULL;
         }
         default: {
