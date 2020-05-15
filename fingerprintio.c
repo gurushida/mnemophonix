@@ -116,7 +116,7 @@ static int read_entry(FILE* f, struct index_entry* *entry) {
         free_index_entry(*entry);
         return MEMORY_ERROR;
     }
-    if (1 != sscanf(buffer, "%d", &((*entry)->signatures->n_signatures))) {
+    if (1 != sscanf(buffer, "%u", &((*entry)->signatures->n_signatures))) {
         free_index_entry(*entry);
         return DECODING_ERROR;
     }
