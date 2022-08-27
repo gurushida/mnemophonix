@@ -19,7 +19,7 @@ static pthread_cond_t condition;
 static pthread_mutex_t audio_mutex;
 
 
-void startCapture(struct index* database_index, struct lsh* lsh) {
+void startCapture(struct index* database_index, struct lsh* lsh, int verbose) {
     printf("Starting to listen...\n");
     AVCaptureSession *captureSession = [[AVCaptureSession alloc] init];
     
@@ -71,7 +71,7 @@ void startCapture(struct index* database_index, struct lsh* lsh) {
             res = generate_fingerprint_from_samples(samples, res, &fingerprint);
             free(samples);
             if (res == SUCCESS) {
-                int best_match = search(fingerprint, database_index, lsh);
+                int best_match = search(fingerprint, database_index, lsh, verbose);
                 free_signatures(fingerprint);
                 if (best_match >= 0 && best_match != last_match) {
                     last_match = best_match;
@@ -99,9 +99,10 @@ void startCapture(struct index* database_index, struct lsh* lsh) {
 
 
 int main(int argc, const char * argv[]) {
+    int verbose = 0;
     @autoreleasepool {
     }
-    if (argc != 2) {
+    if (argc != 2 && argc != 3) {
         fprintf(stderr, "\n");
         fprintf(stderr, " ---                                                       ---\n");
         fprintf(stderr, " \\  \\  mnemophonix - A simple audio fingerprinting system  \\  \\\n");
@@ -109,7 +110,8 @@ int main(int argc, const char * argv[]) {
         fprintf(stderr, "\n");
         fprintf(stderr, "Usage:\n");
         fprintf(stderr, "\n");
-        fprintf(stderr, "%s <index>\n", argv[0]);
+        fprintf(stderr, "%s [-v] <index>\n", argv[0]);
+        fprintf(stderr, "%s -v verbose\n", argv[0]);
         fprintf(stderr, "  Loads the given database index and starts listening from the microphone");
         fprintf(stderr, "  to try to identify what is captured.\n");
         fprintf(stderr, "\n");
@@ -117,14 +119,20 @@ int main(int argc, const char * argv[]) {
     }
     
     struct index* database_index;
+    int db_arg = 1;
+    if (!strcmp(argv[1], "-v")) {
+        verbose = 1;
+        db_arg++;
+    }
+
     printf(" ---                                                       ---\n");
     printf(" \\  \\  mnemophonix - A simple audio fingerprinting system  \\  \\\n");
     printf(" O  O                                                      O  O\n");
-    printf("Loading '%s'...\n", argv[1]);
-    int res = read_index(argv[1], &database_index);
+    printf("Loading '%s'...\n", argv[db_arg]);
+    int res = read_index(argv[db_arg], &database_index);
     if (res != SUCCESS) {
         switch (res) {
-            case CANNOT_READ_FILE: fprintf(stderr, "Cannot read file '%s'\n", argv[1]); return 1;
+            case CANNOT_READ_FILE: fprintf(stderr, "Cannot read file '%s'\n", argv[db_arg]); return 1;
             case MEMORY_ERROR: fprintf(stderr, "Memory allocation error\n"); return 1;
         }
     }
@@ -173,7 +181,7 @@ int main(int argc, const char * argv[]) {
     pthread_mutex_lock(&mutex);
     pthread_mutex_unlock(&mutex);
 
-    startCapture(database_index, lsh);
+    startCapture(database_index, lsh, verbose);
     
     pthread_mutex_destroy(&mutex);
     return 0;

@@ -24,6 +24,9 @@
 // with a given database entry to be retained
 #define MIN_AVERAGE_SCORE 30
 
+// A score above this value is a strong indicator that the
+// sample may be a good match
+#define GOOD_SCORE 35
 
 /**
  * Returns the number of bytes that are identical between
@@ -49,24 +52,78 @@ static int compare(struct signature_list* a, struct signature_list* b) {
 }
 
 
-int search(struct signatures* sample, struct index* database, struct lsh* lsh) {
-    float* scores = (float*)calloc(database->n_entries, sizeof(float));
+struct entry_score {
+    int entry_index;
+    float score;
+    int n_matches;
+};
+
+
+/**
+ * a < b if a is considered a better match than b.
+ */
+static int compare_entry_scores(struct entry_score* a, struct entry_score* b) {
+    float average_score_a = a->n_matches == 0 ? 0 : a->score / (float)a->n_matches;
+    float average_score_b = b->n_matches == 0 ? 0 : b->score / (float)b->n_matches;
+
+    float score_delta = abs(average_score_a - average_score_b);
+
+    // If the score are close enough and there is a big difference in number
+    // of matches, we sort by matches
+    if (score_delta <= 3) {
+        if (score_delta <= 5 && a->n_matches >= (b->n_matches + 5)) {
+            // If a has more at least five more matches than b, we prefer it
+            return -1;
+        }
+
+        if (b->n_matches >= (a->n_matches + 5)) {
+            // If b has more at least five more matches than a, we prefer it
+            return 1;
+        }
+    }
+
+    // If the scores are very close, let's sort by number of matches
+    if (score_delta < 0.5) {
+        if (a->n_matches > b->n_matches) {
+            return -1;
+        }
+
+        if (a->n_matches < b->n_matches) {
+            return 1;
+        }
+    }
+
+    // If the number of matches are the same or if the scores are not too
+    // close, let's sort by scores
+
+    if (average_score_a > average_score_b) {
+        return -1;
+    }
+    if (average_score_b > average_score_a) {
+        return 1;
+    }
+
+    return 0;
+}
+
+
+int search(struct signatures* sample, struct index* database, struct lsh* lsh, int verbose) {
+    struct entry_score* scores = (struct entry_score*)calloc(database->n_entries, sizeof(struct entry_score));
     if (scores == NULL) {
         return MEMORY_ERROR;
     }
-    int* n_matches = (int*)calloc(database->n_entries, sizeof(int));
-    if (n_matches == NULL) {
-        free(scores);
-        return MEMORY_ERROR;
-    }
 
+    for (unsigned int i = 0 ; i < database->n_entries ; i++) {
+        scores[i].entry_index = i;
+        scores[i].score = 0;
+        scores[i].n_matches = 0;
+    }
 
     for (unsigned int i = 0 ; i < sample->n_signatures ; i++) {
         struct signature_list* list;
         int res = get_matches(lsh, sample->signatures[i].minhash, &list);
         if (res == MEMORY_ERROR) {
             free(scores);
-            free(n_matches);
             return MEMORY_ERROR;
         }
 
@@ -76,7 +133,6 @@ int search(struct signatures* sample, struct index* database, struct lsh* lsh) {
         if (array == NULL) {
             free_signature_list(list);
             free(scores);
-            free(n_matches);
             return MEMORY_ERROR;
         }
 
@@ -100,8 +156,8 @@ int search(struct signatures* sample, struct index* database, struct lsh* lsh) {
                     unsigned int score = compare_hashes(database->entries[entry_index]->signatures->signatures[signature_index].minhash,
                                                         sample->signatures[i].minhash);
                     if (score >= MIN_SCORE) {
-                        scores[entry_index] += score;
-                        n_matches[entry_index]++;
+                        scores[entry_index].score += score;
+                        scores[entry_index].n_matches++;
                     }
                 }
                 n_identical_matches = 1;
@@ -111,19 +167,28 @@ int search(struct signatures* sample, struct index* database, struct lsh* lsh) {
         free(array);
     }
 
+    qsort(scores, database->n_entries, sizeof(struct entry_score), (int (*)(const void *, const void *)) compare_entry_scores);
+
+
     int best_match = NO_MATCH_FOUND;
-    int best_score = 0;
-    for (unsigned int i = 0 ; i < database->n_entries ; i++) {
-        float average_score = scores[i] / (float)n_matches[i];
-        if (n_matches[i] >= MIN_SIGNATURE_MATCHES && average_score >= MIN_AVERAGE_SCORE)
+    float best_score = 0;
+    for (unsigned int i = 0 ; i < database->n_entries && i < 10; i++) {
+        int index = scores[i].entry_index;
+        float average_score = scores[i].n_matches == 0 ? 0 : (scores[i].score / (float)scores[i].n_matches);
+        if (verbose) printf("average_score = %f, n_matches = %d (%s)\n", average_score, scores[i].n_matches, database->entries[index]->filename);
+        if ((scores[i].n_matches >= MIN_SIGNATURE_MATCHES || (average_score >= GOOD_SCORE && scores[i].n_matches >= MIN_SIGNATURE_MATCHES / 2))
+            && average_score >= MIN_AVERAGE_SCORE)
         if (average_score > best_score) {
             best_score = average_score;
-            best_match = i;
+            best_match = index;
         }
     }
+    if (best_match != NO_MATCH_FOUND) {
+        if (verbose) printf("\n*** match = %f %s ***\n", best_score, database->entries[best_match]->filename);
+    }
+    if (verbose) printf("-----------------------------\n");
 
     free(scores);
-    free(n_matches);
 
     return best_match;
 }

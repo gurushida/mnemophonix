@@ -107,7 +107,7 @@ int main(int argc, char* argv[]) {
 
         printf("Searching...\n");
 
-        int best_match = search(fingerprint, database_index, lsh);
+        int best_match = search(fingerprint, database_index, lsh, 0);
         long after_search = time_in_milliseconds();
         printf("(Search took %ld ms)\n", after_search - after_lsh);
 
